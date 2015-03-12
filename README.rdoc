@@ -1,4 +1,11 @@
-= celluloid_pubsub  
+= celluloid_pubsub   {<img src="https://badge.fury.io/rb/celluloid_pubsub.png" alt="Gem Version" />}[http://badge.fury.io/rb/celluloid_pubsub]
+{<img src="https://travis-ci.org/bogdanRada/celluloid_pubsub.png?branch=master,develop" />}[https://travis-ci.org/bogdanRada/celluloid_pubsub]   
+{<img src="https://www.versioneye.com/user/projects/52fc7297ec1375346600007d/badge.svg?style=flat" alt="Dependency Status" />}[https://www.versioneye.com/user/projects/52fc7297ec1375346600007d]
+{<img src="https://coveralls.io/repos/bogdanRada/celluloid_pubsub/badge.png?branch=master" alt="Coverage Status" />}[https://coveralls.io/r/bogdanRada/celluloid_pubsub?branch=master]
+{<img src="https://codeclimate.com/github/bogdanRada/celluloid_pubsub.png" />}[https://codeclimate.com/github/bogdanRada/celluloid_pubsub]
+{<img src="https://reposs.herokuapp.com/?path=bogdanRada/celluloid_pubsub"  alt="Repo Size"/>}[https://github.com/bogdanRada/celluloid_pubsub]
+{<img src="https://ruby-gem-downloads-badge.herokuapp.com/celluloid_pubsub?type=total&style=dynamic"  alt="Gem Downloads"/>}[https://rubygems.org/gems/celluloid_pubsub]
+{<img src="http://stillmaintained.com/bogdanRada/celluloid_pubsub.png"  alt=""/>}[https://rubygems.org/gems/celluloid_pubsub]
 
 = Overview
 CelluloidPubsub is a simple ruby implementation of publish subscribe design patterns using celluloid actors and websockets, using Celluloid::Reel server
@@ -66,7 +73,7 @@ Please read {release details}[https://github.com/bogdanRada/celluloid_pubsub/rel
   CelluloidPubsub::WebServer.supervise_as(:web_server)
   Subscriber.supervise_as(:subscriber)
   Publisher.supervise_as(:publisher)
-
+  sleep
 
 = Testing
 
