@@ -7,7 +7,7 @@ module CelluloidPubsub
     PORT = 1234
     PATH = '/ws'
 
-    attr_accessor :options, :subscribers, :backlog
+    attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy
 
     def initialize(options = {})
       parse_options(options)
