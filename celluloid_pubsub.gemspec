@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.summary = 'CelluloidPubsub is a simple ruby implementation of publish subscribe design patterns using celluloid actors and websockets, using Celluloid::Reel server'
   s.email = 'raoul_ice@yahoo.com'
   s.homepage = 'http://github.com/bogdanRada/celluloid_pubsub/'
-  s.description = s.summary
+  s.description = 'CelluloidPubsub is a simple ruby implementation of publish subscribe design patterns using celluloid actors and websockets, using Reel server for inter-process communication'
   s.authors = ['bogdanRada']
   s.date = Date.today
 
@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'celluloid-io', '~> 0.16.2', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '~> 0.5.0', '>= 0.5.0'
   s.add_runtime_dependency 'celluloid-websocket-client', '0.0.1'
-  s.add_runtime_dependency 'activesupport'
+  s.add_runtime_dependency 'activesupport', '~> 4.2.0', '>= 4.2.0'
 
   s.add_development_dependency 'rspec-rails', '~> 2.0', '>= 2.0'
   s.add_development_dependency 'guard', '~> 2.6.1', '>= 2.6'
