@@ -1,0 +1,1 @@
+require 'celluloid_pubsub'

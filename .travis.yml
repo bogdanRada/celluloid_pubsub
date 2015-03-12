@@ -1,0 +1,12 @@
+language: ruby
+before_install:
+  - "echo 'gem: --no-ri --no-rdoc' > ~/.gemrc"
+  - gem install bundler
+rvm:
+  - 1.9.3
+  - jruby-19mode
+  - 2.0.0
+env:
+ - RAILS_ENV=test RACK_ENV=test
+notifications:
+  email: false
