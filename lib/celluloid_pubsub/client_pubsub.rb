@@ -3,7 +3,7 @@ module CelluloidPubsub
     class PubSubWorker
       include Celluloid
       include Celluloid::Logger
-      attr_reader :proc, :topic, :message
+      attr_accessor :actor, :connect_blk, :cllient
 
       def initialize(options, &connect_blk)
         options = options.stringify_keys!
