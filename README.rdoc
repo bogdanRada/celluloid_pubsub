@@ -17,7 +17,7 @@ CelluloidPubsub is a simple ruby implementation of publish subscribe design patt
 3. {Celluloid-IO >= 0.16.2}[https://github.com/celluloid/celluloid-io]
 4. {Reel >= 0.5.0}[https://github.com/celluloid/reel]
 5. {Celluloid-websocket-client = 0.0.1}[https://github.com/jeremyd/celluloid-websocket-client]
-6. {ActiveSuport = 0.0.1}[https://rubygems.org/gems/activesupport]
+6. {ActiveSuport >= 4.2.0}[https://rubygems.org/gems/activesupport]
 
 = Compatibility
 
