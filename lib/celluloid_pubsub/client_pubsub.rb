@@ -6,20 +6,19 @@ module CelluloidPubsub
       attr_accessor :actor, :connect_blk, :client, :options, :hostname, :port, :path
 
       def initialize(options, &connect_blk)
-        options = options.stringify_keys!
         parse_options(options)
         raise "#{self}: Please provide an actor in the options list!!!" if @actor.blank?
         @connect_blk = connect_blk
         @client = Celluloid::WebSocket::Client.new("ws://#{@hostname}:#{@port}#{@path}", Actor.current)
       end
-      
+
       def parse_options(options)
-        raise 'Options is not a hash ' unless options.is_a?(Hash)
-        @options = options.stringify_keys
-        @actor = options.fetch(:actor, nil)
-        @hostname = @options.fetch(:hostname, CelluloidPubsub::WebServer::HOST)
-        @port = @options.fetch(:port, CelluloidPubsub::WebServer::PORT)
-        @path = @options.fetch(:path, CelluloidPubsub::WebServer::PATH
+        raise 'Options is not a hash' unless options.is_a?(Hash)
+        @options = options.stringify_keys!
+        @actor = @options.fetch('actor', nil)
+        @hostname = @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
+        @port = @options.fetch('port', CelluloidPubsub::WebServer::PORT)
+        @path = @options.fetch('path', CelluloidPubsub::WebServer::PATH)
       end
 
       def debug_enabled?
