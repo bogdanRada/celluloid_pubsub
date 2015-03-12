@@ -63,9 +63,9 @@ Please read {release details}[https://github.com/bogdanRada/celluloid_pubsub/rel
   
   end
 
-   CelluloidPubsub::Webser.supervise_as(:web_server)
-   Subscriber.supervise_as(:subscriber)
-   Publisher.supervise_as(:pubilsher)
+  CelluloidPubsub::WebServer.supervise_as(:web_server)
+  Subscriber.supervise_as(:subscriber)
+  Publisher.supervise_as(:pubilsher)
 
 
 = Testing
