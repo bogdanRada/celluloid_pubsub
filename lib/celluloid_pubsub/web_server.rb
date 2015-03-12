@@ -17,7 +17,7 @@ module CelluloidPubsub
     end
 
     def parse_options(options)
-      raise 'Options is not a hash or is not present ' unless options.is_a?(Hash)
+      raise 'Options is not a hash ' unless options.is_a?(Hash)
       @options = options.stringify_keys
       @backlog = @options.fetch(:backlog, 1024)
       @hostname = @options.fetch(:hostname, CelluloidPubsub::WebServer::HOST)
