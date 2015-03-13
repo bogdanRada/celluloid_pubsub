@@ -1,5 +1,10 @@
 # Returns the version of the gem  as a <tt>Gem::Version</tt>
 module CelluloidPubsub
+  #  it prints the gem version as a string
+  #
+  # @return [String]
+  #
+  # @api public
   def self.gem_version
     Gem::Version.new VERSION::STRING
   end

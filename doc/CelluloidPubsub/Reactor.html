@@ -1,0 +1,1225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: CelluloidPubsub::Reactor
+  
+    &mdash; Documentation by YARD 0.8.7.6
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../';
+  framesUrl = "../frames.html#!CelluloidPubsub/Reactor.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (R)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../CelluloidPubsub.html" title="CelluloidPubsub (module)">CelluloidPubsub</a></span></span>
+     &raquo; 
+    <span class="title">Reactor</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Class: CelluloidPubsub::Reactor
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">CelluloidPubsub::Reactor</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+      <dt class="r2">Includes:</dt>
+      <dd class="r2">Celluloid, Celluloid::IO, Celluloid::Logger</dd>
+      
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/celluloid_pubsub/reactor.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>actor that reacts to a action either by delegating action to another actor
+or sending a message in a channel</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+  <h2>Instance Attribute Summary <small>(<a href="#" class="summary_toggle">collapse</a>)</small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#mutex-instance_method" title="#mutex (instance method)">- (Object) <strong>mutex</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute mutex.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#server-instance_method" title="#server (instance method)">- (Object) <strong>server</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute server.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#websocket-instance_method" title="#websocket (instance method)">- (Object) <strong>websocket</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Returns the value of attribute websocket.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#add_subscriber_to_channel-instance_method" title="#add_subscriber_to_channel (instance method)">- (Object) <strong>add_subscriber_to_channel</strong>(channel, message) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delegate_action-instance_method" title="#delegate_action (instance method)">- (Object) <strong>delegate_action</strong>(json_data) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#handle_parsed_websocket_message-instance_method" title="#handle_parsed_websocket_message (instance method)">- (Object) <strong>handle_parsed_websocket_message</strong>(json_data) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#handle_unknown_action-instance_method" title="#handle_unknown_action (instance method)">- (Object) <strong>handle_unknown_action</strong>(json_data) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#handle_websocket_message-instance_method" title="#handle_websocket_message (instance method)">- (Object) <strong>handle_websocket_message</strong>(message) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse_json_data-instance_method" title="#parse_json_data (instance method)">- (Hash) <strong>parse_json_data</strong>(message) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>method used to parse a JSON object into a Hash object.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#run-instance_method" title="#run (instance method)">- (undefined) <strong>run</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>reads from the socket the message and dispatches it to the
+handle_websocket_message method.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#shutdown-instance_method" title="#shutdown (instance method)">- (Object) <strong>shutdown</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#start_subscriber-instance_method" title="#start_subscriber (instance method)">- (Object) <strong>start_subscriber</strong>(channel, message) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unsubscribe_all-instance_method" title="#unsubscribe_all (instance method)">- (Object) <strong>unsubscribe_all</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#unsubscribe_client-instance_method" title="#unsubscribe_client (instance method)">- (Object) <strong>unsubscribe_client</strong>(channel) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#work-instance_method" title="#work (instance method)">- (undefined) <strong>work</strong>(websocket, server) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>rececives a new socket connection from the server  and initiates a new
+mutex that can be used when subsribing to a channel.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id="mutex=-instance_method"></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="mutex-instance_method">
+  
+    - (<tt>Object</tt>) <strong>mutex</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute mutex</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+12
+13
+14</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 12</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_mutex'>mutex</span>
+  <span class='ivar'>@mutex</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="server=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="server-instance_method">
+  
+    - (<tt>Object</tt>) <strong>server</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute server</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+12
+13
+14</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 12</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_server'>server</span>
+  <span class='ivar'>@server</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id="websocket=-instance_method"></span>
+      <div class="method_details ">
+  <h3 class="signature " id="websocket-instance_method">
+  
+    - (<tt>Object</tt>) <strong>websocket</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Returns the value of attribute websocket</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+12
+13
+14</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 12</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_websocket'>websocket</span>
+  <span class='ivar'>@websocket</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="add_subscriber_to_channel-instance_method">
+  
+    - (<tt>Object</tt>) <strong>add_subscriber_to_channel</strong>(channel, message) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+121
+122
+123
+124
+125</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 121</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_add_subscriber_to_channel'>add_subscriber_to_channel</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='const'>CelluloidPubsub</span><span class='op'>::</span><span class='const'>Registry</span><span class='period'>.</span><span class='id identifier rubyid_channels'>channels</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_channel'>channel</span> <span class='kw'>unless</span> <span class='const'>CelluloidPubsub</span><span class='op'>::</span><span class='const'>Registry</span><span class='period'>.</span><span class='id identifier rubyid_channels'>channels</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span>
+  <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_subscribers'>subscribers</span><span class='lbracket'>[</span><span class='id identifier rubyid_channel'>channel</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_subscribers'>subscribers</span><span class='lbracket'>[</span><span class='id identifier rubyid_channel'>channel</span><span class='rbracket'>]</span> <span class='op'>&lt;&lt;</span> <span class='lbrace'>{</span> <span class='label'>reactor:</span> <span class='const'>Actor</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='comma'>,</span> <span class='label'>message:</span> <span class='id identifier rubyid_message'>message</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delegate_action-instance_method">
+  
+    - (<tt>Object</tt>) <strong>delegate_action</strong>(json_data) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 77</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_delegate_action'>delegate_action</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_json_data'>json_data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>client_action</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span>
+    <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>unsubscribe_all</span><span class='tstring_end'>&#39;</span></span>
+      <span class='id identifier rubyid_unsubscribe_all'>unsubscribe_all</span>
+    <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>unsubscribe</span><span class='tstring_end'>&#39;</span></span>
+      <span class='id identifier rubyid_async'>async</span><span class='period'>.</span><span class='id identifier rubyid_unsubscribe_client'>unsubscribe_client</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>channel</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>subscribe</span><span class='tstring_end'>&#39;</span></span>
+      <span class='id identifier rubyid_async'>async</span><span class='period'>.</span><span class='id identifier rubyid_start_subscriber'>start_subscriber</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>channel</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span>
+    <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>publish</span><span class='tstring_end'>&#39;</span></span>
+      <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_publish_event'>publish_event</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>channel</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='id identifier rubyid_json_data'>json_data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>data</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_json'>to_json</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_handle_unknown_action'>handle_unknown_action</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="handle_parsed_websocket_message-instance_method">
+  
+    - (<tt>Object</tt>) <strong>handle_parsed_websocket_message</strong>(json_data) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+67
+68
+69
+70
+71
+72
+73
+74
+75</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 67</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_handle_parsed_websocket_message'>handle_parsed_websocket_message</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_json_data'>json_data</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_json_data'>json_data</span> <span class='op'>=</span> <span class='id identifier rubyid_json_data'>json_data</span><span class='period'>.</span><span class='id identifier rubyid_stringify_keys'>stringify_keys</span>
+    <span class='id identifier rubyid_debug'>debug</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Reactor finds actions for  </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_json_data'>json_data</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_debug_enabled?'>debug_enabled?</span>
+    <span class='id identifier rubyid_delegate_action'>delegate_action</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_json_data'>json_data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>client_action</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_present?'>present?</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_handle_unknown_action'>handle_unknown_action</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="handle_unknown_action-instance_method">
+  
+    - (<tt>Object</tt>) <strong>handle_unknown_action</strong>(json_data) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94
+95</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_handle_unknown_action'>handle_unknown_action</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_debug'>debug</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Trying to dispatch   to server  </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_json_data'>json_data</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_debug_enabled?'>debug_enabled?</span>
+  <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_async'>async</span><span class='period'>.</span><span class='id identifier rubyid_handle_dispatched_message'>handle_dispatched_message</span><span class='lparen'>(</span><span class='const'>Actor</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='comma'>,</span> <span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="handle_websocket_message-instance_method">
+  
+    - (<tt>Object</tt>) <strong>handle_websocket_message</strong>(message) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+62
+63
+64
+65</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 62</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_handle_websocket_message'>handle_websocket_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_json_data'>json_data</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_json_data'>parse_json_data</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_handle_parsed_websocket_message'>handle_parsed_websocket_message</span><span class='lparen'>(</span><span class='id identifier rubyid_json_data'>json_data</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse_json_data-instance_method">
+  
+    - (<tt>Hash</tt>) <strong>parse_json_data</strong>(message) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>method used to parse a JSON object into a Hash object</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>message</span>
+      
+      
+        <span class='type'>(<tt>JSON</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_parse_json_data'>parse_json_data</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_debug'>debug</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Reactor read message  </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_debug_enabled?'>debug_enabled?</span>
+  <span class='id identifier rubyid_json_data'>json_data</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_json_data'>json_data</span> <span class='op'>=</span> <span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_parse'>parse</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='kw'>rescue</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
+    <span class='id identifier rubyid_debug'>debug</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Reactor could not parse </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_content'> because of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_debug_enabled?'>debug_enabled?</span>
+    <span class='comment'># do nothing
+</span>  <span class='kw'>end</span>
+  <span class='id identifier rubyid_json_data'>json_data</span> <span class='op'>=</span> <span class='id identifier rubyid_message'>message</span> <span class='kw'>if</span> <span class='id identifier rubyid_json_data'>json_data</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+  <span class='id identifier rubyid_json_data'>json_data</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="run-instance_method">
+  
+    - (<tt>undefined</tt>) <strong>run</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>reads from the socket the message and dispatches it to the
+handle_websocket_message method</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>undefined</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+36
+37
+38
+39
+40</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 36</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span>
+  <span class='kw'>while</span> <span class='id identifier rubyid_message'>message</span> <span class='op'>=</span> <span class='ivar'>@websocket</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span>
+    <span class='id identifier rubyid_handle_websocket_message'>handle_websocket_message</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="shutdown-instance_method">
+  
+    - (<tt>Object</tt>) <strong>shutdown</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+103
+104
+105</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 103</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_shutdown'>shutdown</span>
+  <span class='id identifier rubyid_terminate'>terminate</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="start_subscriber-instance_method">
+  
+    - (<tt>Object</tt>) <strong>start_subscriber</strong>(channel, message) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 107</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_start_subscriber'>start_subscriber</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>unless</span> <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_present?'>present?</span>
+  <span class='ivar'>@mutex</span><span class='period'>.</span><span class='id identifier rubyid_lock'>lock</span>
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_add_subscriber_to_channel'>add_subscriber_to_channel</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_debug'>debug</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Subscribed to </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_channel'>channel</span><span class='embexpr_end'>}</span><span class='tstring_content'> with </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_debug_enabled?'>debug_enabled?</span>
+    <span class='ivar'>@websocket</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_message'>message</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>client_action</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>successful_subscription</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>channel</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_json'>to_json</span>
+  <span class='kw'>rescue</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='lbracket'>[</span><span class='id identifier rubyid_e'>e</span><span class='comma'>,</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:backtrace</span><span class='rparen'>)</span> <span class='op'>?</span> <span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_backtrace'>backtrace</span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='comma'>,</span> <span class='id identifier rubyid_message'>message</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span>
+  <span class='kw'>ensure</span>
+    <span class='ivar'>@mutex</span><span class='period'>.</span><span class='id identifier rubyid_unlock'>unlock</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="unsubscribe_all-instance_method">
+  
+    - (<tt>Object</tt>) <strong>unsubscribe_all</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 127</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_unsubscribe_all'>unsubscribe_all</span>
+  <span class='const'>CelluloidPubsub</span><span class='op'>::</span><span class='const'>Registry</span><span class='period'>.</span><span class='id identifier rubyid_channels'>channels</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_channel'>channel</span><span class='op'>|</span>
+    <span class='ivar'>@subscribers</span><span class='lbracket'>[</span><span class='id identifier rubyid_channel'>channel</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_hash'>hash</span><span class='op'>|</span>
+      <span class='id identifier rubyid_hash'>hash</span><span class='lbracket'>[</span><span class='symbol'>:reactor</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_websocket'>websocket</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_subscribers'>subscribers</span><span class='lbracket'>[</span><span class='id identifier rubyid_channel'>channel</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>clearing connections</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_debug_enabled?'>debug_enabled?</span>
+  <span class='id identifier rubyid_shutdown'>shutdown</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="unsubscribe_client-instance_method">
+  
+    - (<tt>Object</tt>) <strong>unsubscribe_client</strong>(channel) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+97
+98
+99
+100
+101</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 97</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_unsubscribe_client'>unsubscribe_client</span><span class='lparen'>(</span><span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>unless</span> <span class='id identifier rubyid_channel'>channel</span><span class='period'>.</span><span class='id identifier rubyid_present?'>present?</span>
+  <span class='ivar'>@websocket</span><span class='period'>.</span><span class='id identifier rubyid_close'>close</span>
+  <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_unsubscribe_client'>unsubscribe_client</span><span class='lparen'>(</span><span class='const'>Actor</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='comma'>,</span> <span class='id identifier rubyid_channel'>channel</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="work-instance_method">
+  
+    - (<tt>undefined</tt>) <strong>work</strong>(websocket, server) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>rececives a new socket connection from the server</p>
+
+<pre class="code ruby"><code class="ruby">and initiates a new mutex that can be used when subsribing to a channel</code></pre>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>websocket</span>
+      
+      
+        <span class='type'>(<tt>#object</tt>, <tt>#read</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>undefined</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24
+25
+26
+27
+28</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/reactor.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_work'>work</span><span class='lparen'>(</span><span class='id identifier rubyid_websocket'>websocket</span><span class='comma'>,</span> <span class='id identifier rubyid_server'>server</span><span class='rparen'>)</span>
+  <span class='ivar'>@server</span> <span class='op'>=</span> <span class='id identifier rubyid_server'>server</span>
+  <span class='ivar'>@mutex</span> <span class='op'>=</span> <span class='const'>Mutex</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+  <span class='ivar'>@websocket</span> <span class='op'>=</span> <span class='id identifier rubyid_websocket'>websocket</span>
+  <span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Streaming changes for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_websocket'>websocket</span><span class='period'>.</span><span class='id identifier rubyid_url'>url</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@server</span><span class='period'>.</span><span class='id identifier rubyid_debug_enabled?'>debug_enabled?</span>
+  <span class='id identifier rubyid_async'>async</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Fri Mar 13 08:41:48 2015 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.6 (ruby-2.0.0).
+</div>
+
+  </body>
+</html>
