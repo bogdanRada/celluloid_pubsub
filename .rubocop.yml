@@ -5,7 +5,7 @@ AllCops:
     - Guardfile
 
 Documentation:
-  Enabled: false
+  Enabled: true
 
 Encoding:
   Enabled: false
