@@ -12,11 +12,16 @@ module CelluloidPubsub
   # module used to generate the version string
   # provides a easy way of getting the major, minor and tiny
   module VERSION
+    # major release version
     MAJOR = 0
+    # minor release version
     MINOR = 0
-    TINY = 5
+    # tiny release version
+    TINY = 6
+    # prelease version ( set this only if it is a prelease)
     PRE = nil
 
+    # generates the version string
     STRING = [MAJOR, MINOR, TINY, PRE].compact.join('.')
   end
 end
