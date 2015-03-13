@@ -1,9 +1,15 @@
 require_relative './registry'
-
-# The reactor handles new connections. Based on what the client sends it either subscribes to a channel
-# or will publish to a channel or just dispatch to the server if command is neither subscribe, publish or unsubscribe
 module CelluloidPubsub
-  # actor that reacts to a action either by delegating action to another actor or sending a message in a channel
+  # The reactor handles new connections. Based on what the client sends it either subscribes to a channel
+  # or will publish to a channel or just dispatch to the server if command is neither subscribe, publish or unsubscribe
+  # @!attribute websocket
+  #   @return [Reel::WebSocket] websocket connection
+  #
+  # @!attribute server
+  #   @return [CelluloidPubsub::Webserver] the server actor to which the reactor is connected to
+  #
+  # @!attribute mutex
+  #   @return [Mutex] mutex used to lock when subscribing to a channel
   class Reactor
     include Celluloid
     include Celluloid::IO
@@ -14,7 +20,7 @@ module CelluloidPubsub
     #  rececives a new socket connection from the server
     #  and initiates a new mutex that can be used when subsribing to a channel
     #
-    # @param  [#object, #read] websocket
+    # @param  [#read] websocket
     #
     # @return [undefined]
     #
@@ -59,6 +65,7 @@ module CelluloidPubsub
       json_data
     end
 
+    #
     def handle_websocket_message(message)
       json_data = parse_json_data(message)
       handle_parsed_websocket_message(json_data)
