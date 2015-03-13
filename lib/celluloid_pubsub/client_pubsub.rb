@@ -11,18 +11,18 @@ module CelluloidPubsub
     # @!attribute connect_blk
     #   @return [Proc] Block  that will execute after the connection is opened
     #
-    # @!attribute client 
+    # @!attribute client
     #   @return [Celluloid::WebSocket::Client] A websocket client that is used to chat witht the webserver
     #
-    # @!attribute options 
+    # @!attribute options
     #   @return [Hash] the options that can be used to connect to webser and send additional data
     #
     # @!attribute hostname
     #   @return [String] The hostname on which the webserver runs on
-    #   
+    #
     # @!attribute port
     #  @return [String] The port on which the webserver runs on
-    # 
+    #
     # @!attribute path
     #   @return [String] The hostname on which the webserver runs on
     class PubSubWorker
@@ -50,7 +50,7 @@ module CelluloidPubsub
         @connect_blk = connect_blk
         @client = Celluloid::WebSocket::Client.new("ws://#{@hostname}:#{@port}#{@path}", Actor.current)
       end
-      
+
       # check the options list for values and sets default values if not found
       #
       # @param  [Hash]  options the options that can be used to connect to webser and send additional data

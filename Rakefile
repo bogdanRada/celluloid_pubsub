@@ -2,6 +2,7 @@ require 'bundler/setup'
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'coveralls/rake/task'
+require 'yard'
 Coveralls::RakeTask.new
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
@@ -15,20 +16,6 @@ end
 #  Dummy::Application.load_tasks
 #  Rake::Task["db:test:prepare"].invoke
 # end
-
-# measure coverage
-
-require 'yardstick/rake/measurement'
-
-Yardstick::Rake::Measurement.new(:yardstick_measure) do |measurement|
-  measurement.output = 'measurement/report.txt'
-end
-
-# verify coverage
-
-require 'yardstick/rake/verify'
-
-Yardstick::Rake::Verify.new
 
 YARD::Rake::YardocTask.new do |t|
   t.files = ['lib/**/*.rb'] # optional
@@ -57,10 +44,10 @@ task :all do |_t|
   if ENV['TRAVIS']
     exec(' bundle exec phare &&  bundle exec rake  spec && bundle exec rake coveralls:push')
   else
-    exec(' bundle exec phare && bundle exec rake spec')
+    exec('bundle exec phare && bundle exec rake spec')
   end
 end
 
-task :check_yard do |_t|
-  exec(' bundle exec rake yardstick_measure &&  bundle exec  rake verify_measurements')
+task :docs do
+  exec(' bundle exec rubocop -a .  && bundle exec phare && bundle exec inch && bundle exec yard')
 end
