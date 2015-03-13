@@ -4,18 +4,44 @@ module CelluloidPubsub
     # worker that subscribes to a channel or publishes to a channel
     # if it used to subscribe to a channel the worker will dispatch the messages to the actor that made the
     # connection in the first place.
+    #
+    # @!attribute actor
+    #   @return [Celluloid::Actor] actor to which callbacks will be delegated to
+    #
+    # @!attribute connect_blk
+    #   @return [Proc] Block  that will execute after the connection is opened
+    #
+    # @!attribute client
+    #   @return [Celluloid::WebSocket::Client] A websocket client that is used to chat witht the webserver
+    #
+    # @!attribute options
+    #   @return [Hash] the options that can be used to connect to webser and send additional data
+    #
+    # @!attribute hostname
+    #   @return [String] The hostname on which the webserver runs on
+    #
+    # @!attribute port
+    #  @return [String] The port on which the webserver runs on
+    #
+    # @!attribute path
+    #   @return [String] The hostname on which the webserver runs on
     class PubSubWorker
       include Celluloid
       include Celluloid::Logger
       attr_accessor :actor, :connect_blk, :client, :options, :hostname, :port, :path
 
-      #  receives a list of options that can only have one key "actor" in order to delegate
-      #  actions to the actor that subscribed to a channel
+      #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
+      #  when receiving messages from a channel
       #
-      # @param  [Hash] options
-      # @param [Proc] &connect_blk
+      # @param  [Hash]  options the options that can be used to connect to webser and send additional data
+      # @option options [String] :actor The actor that made the connection
+      # @option options [String]:hostname The hostname on which the webserver runs on
+      # @option options [String] :port The port on which the webserver runs on
+      # @option options [String] :path The request path that the webserver accepts
       #
-      # @return [undefined]
+      # @param [Proc] connect_blk  Block  that will execute after the connection is opened
+      #
+      # @return [void]
       #
       # @api public
       def initialize(options, &connect_blk)
@@ -25,6 +51,17 @@ module CelluloidPubsub
         @client = Celluloid::WebSocket::Client.new("ws://#{@hostname}:#{@port}#{@path}", Actor.current)
       end
 
+      # check the options list for values and sets default values if not found
+      #
+      # @param  [Hash]  options the options that can be used to connect to webser and send additional data
+      # @option options [String] :actor The actor that made the connection
+      # @option options [String]:hostname The hostname on which the webserver runs on
+      # @option options [String] :port The port on which the webserver runs on
+      # @option options [String] :path The request path that the webserver accepts
+      #
+      # @return [void]
+      #
+      # @api public
       def parse_options(options)
         raise 'Options is not a hash' unless options.is_a?(Hash)
         @options = options.stringify_keys!
@@ -48,7 +85,7 @@ module CelluloidPubsub
       #
       # @param [string] channel
       #
-      # @return [undefined]
+      # @return [void]
       #
       # @api public
       def subscribe(channel)
@@ -62,7 +99,7 @@ module CelluloidPubsub
       # @param [string] channel
       # @param [#to_s] data
       #
-      # @return [undefined]
+      # @return [void]
       #
       # @api public
       def publish(channel, data)
@@ -73,7 +110,7 @@ module CelluloidPubsub
 
       #  callback executes after connection is opened and delegates action to actor
       #
-      # @return [undefined]
+      # @return [void]
       #
       # @api public
       def on_open
@@ -85,9 +122,9 @@ module CelluloidPubsub
       # and parses the message using JSON.parse and dispatches the parsed
       # message to the original actor that made the connection
       #
-      # @param [Hash] data
+      # @param [JSON] data
       #
-      # @return [undefined]
+      # @return [void]
       #
       # @api public
       def on_message(data)
@@ -99,9 +136,11 @@ module CelluloidPubsub
 
       # callback executes when connection closes
       #
-      # @parama [String[ code
+      # @param [String] code
       #
       # @param [String] reason
+      #
+      # @return [void]
       #
       # @api public
       def on_close(code, reason)
@@ -119,7 +158,7 @@ module CelluloidPubsub
       #
       # @param [Hash] message
       #
-      # @return [undefined]
+      # @return [void]
       #
       # @api private
       def chat(message)
@@ -139,8 +178,13 @@ module CelluloidPubsub
     # method used to make a new connection to the webserver
     # after the connection is opened it will execute the block that is passed as argument
     #
-    # @param [Hash] options
-    # @param [Proc] &connect_blk
+    # @param  [Hash]  options the options that can be used to connect to webser and send additional data
+    # @option options [String] :actor The actor that made the connection
+    # @option options [String]:hostname The hostname on which the webserver runs on
+    # @option options [String] :port The port on which the webserver runs on
+    # @option options [String] :path The request path that the webserver accepts
+    #
+    # @param [Proc] connect_blk Block  that will execute after the connection is opened
     #
     # @return [CelluloidPubsub::Client::PubSubWorker]
     #
