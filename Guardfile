@@ -10,3 +10,7 @@ guard 'rspec' do
 end
 
 # vim:ft=ruby
+
+guard :inch do
+  watch(/.+\.rb/)
+end
