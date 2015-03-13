@@ -49,5 +49,5 @@ task :all do |_t|
 end
 
 task :docs do
-  exec(' bundle exec rubocop -a .  && bundle exec phare && bundle exec inch && bundle exec yard')
+  exec(' bundle exec rubocop -a .  && bundle exec phare  && bundle exec inch --pedantic && bundle exec yard')
 end

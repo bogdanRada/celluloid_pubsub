@@ -3,6 +3,8 @@ module CelluloidPubsub
   class Registry
     include ActiveSupport::Configurable
     class << self
+      # @!attribute channels
+      #   @return [Array] array of channels to which actors have subscribed to
       attr_accessor :channels
     end
     @channels = []
