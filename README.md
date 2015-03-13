@@ -69,7 +69,7 @@ To test, do the following:
 Contributions
 --------
 
-Please log all feedback/issues via [Examples Folder][issues].  Thanks.
+Please log all feedback/issues via [Github Issues][issues].  Thanks.
 
 [issues]: http://github.com/bogdanRada/celluloid_pubsub/issues
 
