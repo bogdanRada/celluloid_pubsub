@@ -124,7 +124,7 @@
       <li class="public ">
   <span class="summary_signature">
     
-      <a href="#channels-class_method" title="channels (class method)">+ (Object) <strong>channels</strong> </a>
+      <a href="#channels-class_method" title="channels (class method)">+ (Array) <strong>channels</strong> </a>
     
 
     
@@ -142,7 +142,7 @@
 
   
     <span class="summary_desc"><div class='inline'>
-<p>Returns the value of attribute channels.</p>
+<p>Array of channels to which actors have subscribed to.</p>
 </div></span>
   
 </li>
@@ -163,7 +163,7 @@
       <div class="method_details first">
   <h3 class="signature first" id="channels-class_method">
   
-    + (<tt>Object</tt>) <strong>channels</strong> 
+    + (<tt>Array</tt>) <strong>channels</strong> 
   
 
   
@@ -172,13 +172,31 @@
 </h3><div class="docstring">
   <div class="discussion">
     
-<p>Returns the value of attribute channels</p>
+<p>Returns array of channels to which actors have subscribed to</p>
 
 
   </div>
 </div>
 <div class="tags">
   
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>array of channels to which actors have subscribed to</p>
+</div>
+      
+    </li>
+  
+</ul>
 
 </div><table class="source_code">
   <tr>
@@ -186,12 +204,12 @@
       <pre class="lines">
 
 
-6
-7
-8</pre>
+8
+9
+10</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/registry.rb', line 6</span>
+      <pre class="code"><span class="info file"># File 'lib/celluloid_pubsub/registry.rb', line 8</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_channels'>channels</span>
   <span class='ivar'>@channels</span>
@@ -207,7 +225,7 @@
 </div>
 
     <div id="footer">
-  Generated on Fri Mar 13 09:00:10 2015 by
+  Generated on Fri Mar 13 11:19:34 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.6 (ruby-2.0.0).
 </div>
