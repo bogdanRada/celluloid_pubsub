@@ -6,7 +6,7 @@
 {<img src="https://reposs.herokuapp.com/?path=bogdanRada/celluloid_pubsub"  alt="Repo Size"/>}[https://github.com/bogdanRada/celluloid_pubsub]
 {<img src="https://ruby-gem-downloads-badge.herokuapp.com/celluloid_pubsub?type=total&style=dynamic"  alt="Gem Downloads"/>}[https://rubygems.org/gems/celluloid_pubsub]
 {<img src="http://stillmaintained.com/bogdanRada/celluloid_pubsub.png"  alt=""/>}[https://rubygems.org/gems/celluloid_pubsub]
-
+{<img src="https://inch-ci.org/github/bogdanRada/celluloid_pubsub.svg?branch=master"  alt=""/>}[https://inch-ci.org/github/bogdanRada/celluloid_pubsub]
 = Overview
 CelluloidPubsub is a simple ruby implementation of publish subscribe design patterns using celluloid actors and websockets, using Celluloid::Reel server
 
