@@ -140,6 +140,8 @@ module CelluloidPubsub
       #
       # @param [String] reason
       #
+      # @return [void]
+      #
       # @api public
       def on_close(code, reason)
         @client.terminate

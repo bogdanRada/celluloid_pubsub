@@ -31,8 +31,11 @@ module CelluloidPubsub
   class WebServer < Reel::Server::HTTP
     include Celluloid::Logger
 
+    # The hostname on which the webserver runs on by default
     HOST = '0.0.0.0'
+    # The port on which the webserver runs on by default
     PORT = 1234
+    # The request path that the webserver accepts by default
     PATH = '/ws'
 
     attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy
@@ -182,8 +185,8 @@ module CelluloidPubsub
     # If the message can be parsed into a Hash it will respond to the reactor's websocket connection with the same message in JSON format
     # otherwise will try send the message how it is and escaped into JSON format
     #
-    #  @param [CelluloidPubsub::Reactor] reactor The  reactor that received an unhandled message
-    #  @param [Object] data The message that the reactor could not handle
+    # @param [CelluloidPubsub::Reactor] reactor The  reactor that received an unhandled message
+    # @param [Object] data The message that the reactor could not handle
     #
     # @return [void]
     #
