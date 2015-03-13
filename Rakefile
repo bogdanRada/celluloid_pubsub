@@ -16,6 +16,26 @@ end
 #  Rake::Task["db:test:prepare"].invoke
 # end
 
+# measure coverage
+
+require 'yardstick/rake/measurement'
+
+Yardstick::Rake::Measurement.new(:yardstick_measure) do |measurement|
+  measurement.output = 'measurement/report.txt'
+end
+
+# verify coverage
+
+require 'yardstick/rake/verify'
+
+Yardstick::Rake::Verify.new
+
+YARD::Rake::YardocTask.new do |t|
+  t.files = ['lib/**/*.rb'] # optional
+  t.options = ['--any', '--extra', '--opts'] # optional
+  t.stats_options = ['--list-undoc'] # optional
+end
+
 unless ENV['TRAVIS']
   require 'rvm-tester'
   RVM::Tester::TesterTask.new(:suite) do |t|
@@ -39,4 +59,8 @@ task :all do |_t|
   else
     exec(' bundle exec phare && bundle exec rake spec')
   end
+end
+
+task :check_yard do |_t|
+  exec(' bundle exec rake yardstick_measure &&  bundle exec  rake verify_measurements')
 end

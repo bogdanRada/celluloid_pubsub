@@ -1,5 +1,11 @@
 require_relative './reactor'
+# webserver to which socket connects should connect to .
+# the server will dispatch each request into a new Reactor
+# which will handle the action based on the message
 module CelluloidPubsub
+  # webserver to which socket connects should connect to .
+  # the server will dispatch each request into a new Reactor
+  # which will handle the action based on the message
   class WebServer < Reel::Server::HTTP
     include Celluloid::Logger
 

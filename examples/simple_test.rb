@@ -1,6 +1,7 @@
 require 'bundler/setup'
 require 'celluloid_pubsub'
 
+# actor that subscribes to a channel
 class Subscriber
   include Celluloid
   include Celluloid::Logger
@@ -18,9 +19,10 @@ class Subscriber
   def on_close(code, reason)
     puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
-   end
   end
+end
 
+# actor that publishes a message in a channel
 class Publisher
   include Celluloid
   include Celluloid::Logger
