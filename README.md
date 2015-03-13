@@ -1,4 +1,4 @@
-Caphub
+celluloid_pubsub
 ==================
 
 
