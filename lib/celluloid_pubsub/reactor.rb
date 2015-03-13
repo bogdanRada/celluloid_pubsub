@@ -27,14 +27,25 @@ module CelluloidPubsub
       async.run
     end
 
+    # reads from the socket the message
+    # and dispatches it to the handle_websocket_message method
     #
-
+    # @return [undefined]
+    #
+    # @api public
     def run
       while message = @websocket.read
         handle_websocket_message(message)
       end
     end
 
+    # method used to parse a JSON object into a Hash object
+    #
+    # @param [JSON] message
+    #
+    # @return [Hash]
+    #
+    # @api public
     def parse_json_data(message)
       debug "Reactor read message  #{message}" if @server.debug_enabled?
       json_data = nil
