@@ -7,6 +7,7 @@ rvm:
   - jruby-19mode
   - 2.0.0
 env:
- - RAILS_ENV=test RACK_ENV=test
+ - RAILS_ENV=test RACK_ENV=test 
+ - JRUBY_OPTS="-Xcext.enabled=true"
 notifications:
   email: false
