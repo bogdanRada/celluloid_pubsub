@@ -18,19 +18,22 @@ describe CelluloidPubsub::Client::PubSubWorker do
   let(:blk) { proc { |a| puts a } }
   let(:options) { {} }
   let(:socket) { mock }
+  let(:actor) { mock }
 
   before(:each) do
     Celluloid::WebSocket::Client.stubs(:new).returns(socket)
     socket.stubs(:text)
-    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => 'actor' }, &blk)
+    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor }, &blk)
+    @worker.stubs(:client).returns(socket)
     @worker.stubs(:debug)
     @worker.stubs(:async).returns(@worker)
+    actor.stubs(:async).returns(actor)
   end
 
   describe '#initialize' do
     it 'creates a object' do
       @worker.connect_blk.should_not be_nil
-      @worker.actor.should eq 'actor'
+      @worker.actor.should eq actor
     end
   end
 
@@ -83,12 +86,52 @@ describe CelluloidPubsub::Client::PubSubWorker do
     end
   end
 
-  describe '#publish' do
+  describe '#on_open' do
     let(:channel) { 'some_channel' }
     let(:data) { 'some_message' }
     it 'chats with the server' do
       @worker.connect_blk.expects(:call)
       @worker.on_open
+    end
+  end
+
+  describe '#on_message' do
+    let(:channel) { 'some_channel' }
+    let(:data) { 'some_message' }
+    it 'chats with the server' do
+      JSON.expects(:parse).with(data).returns(data)
+      @worker.actor.expects(:async).returns(actor)
+      @worker.actor.expects(:on_message).with(data)
+      @worker.on_message(data)
+    end
+  end
+
+  describe '#on_close' do
+    let(:channel) { 'some_channel' }
+    let(:code) { 'some_message' }
+    let(:reason) { 'some reason' }
+
+    it 'chats with the server' do
+      @worker.client.expects(:terminate)
+      @worker.actor.expects(:on_close).with(code, reason)
+      @worker.on_close(code, reason)
+    end
+  end
+
+  describe '#chat' do
+    let(:channel) { 'some_channel' }
+    let(:data) { 'some_message' }
+    let(:data_hash) { { a: 'some mesage ' } }
+    let(:json) { { action: 'message', message: data } }
+    it 'chats witout hash' do
+      JSON.expects(:dump).with(json).returns(json)
+      @worker.client.expects(:text).with(json)
+      @worker.send(:chat, data)
+    end
+
+    it 'chats with a hash' do
+      @worker.client.expects(:text).with(data_hash.to_json)
+      @worker.send(:chat, data_hash)
     end
   end
 end
