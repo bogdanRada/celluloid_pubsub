@@ -46,3 +46,11 @@ RSpec.configure do |config|
     end
   end
 end
+
+# class used for testing actions
+class TestActor
+  include Celluloid
+  include Celluloid::Logger
+end
+
+TestActor.supervise_as(:test_actor)
