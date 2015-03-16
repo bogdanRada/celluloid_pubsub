@@ -51,12 +51,15 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
+    #
+    # :nocov:
     def initialize(options = {})
       parse_options(options)
       @subscribers = {}
       info "CelluloidPubsub::WebServer example starting on #{@hostname}:#{@port}" if debug_enabled?
       super(@hostname, @port, { spy: @spy, backlog: @backlog }, &method(:on_connection))
     end
+    # :nocov:
 
     #  receives a list of options that are used to configure the webserver
     #

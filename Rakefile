@@ -3,6 +3,7 @@ require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'coveralls/rake/task'
 require 'yard'
+require 'yard-rspec'
 Coveralls::RakeTask.new
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
@@ -16,10 +17,12 @@ end
 #  Dummy::Application.load_tasks
 #  Rake::Task["db:test:prepare"].invoke
 # end
+YARD::Config.options[:load_plugins] = true
+YARD::Config.load_plugins
 
 YARD::Rake::YardocTask.new do |t|
-  t.files = ['lib/**/*.rb'] # optional
-  t.options = ['--any', '--extra', '--opts', '--markup-provider=redcarpet', '--markup=markdown'] # optional
+  t.files = ['lib/**/*.rb', 'spec/**/*_spec.rb'] # optional
+  t.options = ['--any', '--extra', '--opts', '--markup-provider=redcarpet', '--markup=markdown', '--debug'] # optional
   t.stats_options = ['--list-undoc'] # optional
 end
 
@@ -44,7 +47,7 @@ task :all do |_t|
   if ENV['TRAVIS']
     exec(' bundle exec phare &&  bundle exec rake  spec && bundle exec rake coveralls:push')
   else
-    exec('bundle exec phare && bundle exec rake spec')
+    exec('bundle exec rubocop -a . && bundle exec phare && bundle exec rake spec')
   end
 end
 
