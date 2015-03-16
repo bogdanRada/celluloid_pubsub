@@ -2,14 +2,12 @@ require_relative './registry'
 module CelluloidPubsub
   # The reactor handles new connections. Based on what the client sends it either subscribes to a channel
   # or will publish to a channel or just dispatch to the server if command is neither subscribe, publish or unsubscribe
+  #
   # @!attribute websocket
   #   @return [Reel::WebSocket] websocket connection
   #
   # @!attribute server
   #   @return [CelluloidPubsub::Webserver] the server actor to which the reactor is connected to
-  #
-  # @!attribute mutex
-  #   @return [Mutex] mutex used to lock when subscribing to a channel
   #
   # @!attribute channels
   #   @return [Array] array of channels to which the current reactor has subscribed to
@@ -18,10 +16,10 @@ module CelluloidPubsub
     include Celluloid::IO
     include Celluloid::Logger
 
-    attr_accessor :websocket, :server, :mutex, :channels
+    attr_accessor :websocket, :server, :channels
 
     #  rececives a new socket connection from the server
-    #  and initiates a new mutex that can be used when subsribing to a channel
+    #  and listens for messages
     #
     # @param  [Reel::WebSocket] websocket
     #
@@ -30,7 +28,6 @@ module CelluloidPubsub
     # @api public
     def work(websocket, server)
       @server = server
-      @mutex = Mutex.new
       @channels = []
       @websocket = websocket
       info "Streaming changes for #{websocket.url}" if @server.debug_enabled?
@@ -44,11 +41,14 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
+    #
+    # :nocov:
     def run
       while message = @websocket.read
         handle_websocket_message(message)
       end
     end
+    # :nocov:
 
     # method used to parse a JSON object into a Hash object
     #
@@ -170,11 +170,11 @@ module CelluloidPubsub
     # @api public
     def unsubscribe_client(channel)
       return unless channel.present?
-      @channels.delete(channel)
+      @channels.delete(channel) unless @channels.blank?
       @websocket.close if @channels.blank?
       @server.subscribers[channel].delete_if do |hash|
         hash[:reactor] == Actor.current
-      end
+      end if @server.subscribers[channel].present?
     end
 
     # the method will terminate the current actor
@@ -200,13 +200,9 @@ module CelluloidPubsub
     # @api public
     def start_subscriber(channel, message)
       return unless channel.present?
-      begin
-        add_subscriber_to_channel(channel, message)
-        debug "Subscribed to #{channel} with #{message}" if @server.debug_enabled?
-        @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json
-      rescue => e
-        raise [e, e.respond_to?(:backtrace) ? e.backtrace : '', channel, message].inspect
-      end
+      add_subscriber_to_channel(channel, message)
+      debug "Subscribed to #{channel} with #{message}" if @server.debug_enabled?
+      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json
     end
 
     # adds the curent actor the list of the subscribers for a particular channel
