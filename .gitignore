@@ -16,3 +16,4 @@ Gemfile.lock
 /.git-rewrite/
 .yardoc/
 doc/
+bin/
