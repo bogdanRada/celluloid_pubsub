@@ -28,7 +28,7 @@ Requirements
 [celluloid]: https://github.com/celluloid/celluloid
 [celluloid-io]: https://github.com/celluloid/celluloid-io
 [reel]: https://github.com/celluloid/reel
-[celluloid-websocket-client]: [https://github.com/jeremyd/celluloid-websocket-client
+[celluloid-websocket-client]: https://github.com/jeremyd/celluloid-websocket-client
 [activesupport]:https://rubygems.org/gems/activesupport
 
 Compatibility
@@ -69,7 +69,7 @@ To test, do the following:
 Contributions
 --------
 
-Please log all feedback/issues via [Examples Folder][issues].  Thanks.
+Please log all feedback/issues via [Github Issues][issues].  Thanks.
 
 [issues]: http://github.com/bogdanRada/celluloid_pubsub/issues
 
