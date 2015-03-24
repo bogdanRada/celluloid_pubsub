@@ -110,7 +110,7 @@ module CelluloidPubsub
     #
     # @api public
     def publish_event(current_topic, message)
-      return if current_topic.blank? || message.blank?
+      return if current_topic.blank? || message.blank? || @subscribers[current_topic].blank?
       @subscribers[current_topic].each do |hash|
         hash[:reactor].websocket << message
       end
