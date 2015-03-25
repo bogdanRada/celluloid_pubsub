@@ -7,7 +7,7 @@ class Subscriber
   include Celluloid::Logger
 
   def initialize
-   @client = CelluloidPubsub::Client.connect(actor: Actor.current) do |ws|
+    @client = CelluloidPubsub::Client.connect(actor: Actor.current) do |ws|
       ws.subscribe('test_channel') # this will execute after the connection is opened
     end
   end
@@ -29,16 +29,16 @@ class Publisher
   include Celluloid::Logger
 
   def initialize
-    @client =   CelluloidPubsub::Client.connect(actor: Actor.current) do |ws|
+    @client = CelluloidPubsub::Client.connect(actor: Actor.current) do |ws|
       ws.subscribe('test_channel2') # this will execute after the connection is opened
     end
     @client.publish('test_channel', 'data' => 'my_message') # the message needs to be a Hash
     @client.publish('test_channel', 'data' => 'my_message')
     @client.publish('test_channel', 'data' => 'my_message')
   end
-  
-   def on_message(message)
-    puts " publisher got #{message.inspect}"  
+
+  def on_message(message)
+    puts " publisher got #{message.inspect}"
   end
 
   def on_close(code, reason)
