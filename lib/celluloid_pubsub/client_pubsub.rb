@@ -94,6 +94,17 @@ module CelluloidPubsub
         async.chat(subscription_data)
       end
 
+      # checks if the message has the successfull subscription action
+      #
+      # @param [string] message
+      #
+      # @return [void]
+      #
+      # @api public
+      def succesfull_subscription?(message)
+        message.present? && message['client_action'].present? && message['client_action'] == 'successful_subscription'
+      end
+
       # publishes to a channel some data (can be anything)
       #
       # @param [string] channel
