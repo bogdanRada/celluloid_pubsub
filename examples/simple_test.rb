@@ -1,6 +1,7 @@
 require 'bundler/setup'
 require 'celluloid_pubsub'
 
+ENV['DEBUG_CELLULOID'] = ARGV.map(&:downcase).include?('debug') ? 'true' : 'false'
 # actor that subscribes to a channel
 class Subscriber
   include Celluloid
@@ -13,8 +14,13 @@ class Subscriber
   end
 
   def on_message(message)
-    puts "subscriber got #{message.inspect}"
-    @client.publish('test_channel2', 'data' => 'my_message') # the message needs to be a Hash
+    if @client.succesfull_subscription?(message)
+      puts "subscriber got successful subscription #{message.inspect}"
+      @client.publish('test_channel2', 'data' => ' subscriber got successfull subscription') # the message needs to be a Hash
+    else
+      puts "subscriber got message #{message.inspect}"
+      @client.publish('test_channel2', 'data' => "subscriber got #{message}") # the message needs to be a Hash
+    end
   end
 
   def on_close(code, reason)
