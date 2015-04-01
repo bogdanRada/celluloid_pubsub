@@ -77,6 +77,30 @@ describe CelluloidPubsub::Client::PubSubWorker do
     end
   end
 
+  describe '#succesfull_subscription?' do
+    let(:message) { mock }
+    let(:action) { mock }
+
+    before(:each) do
+      message.stubs(:present?).returns(true)
+      message.stubs(:[]).with('client_action').returns('successful_subscription')
+    end
+
+    it 'checks the message and returns true' do
+      message.expects(:present?).returns(true)
+      message.stubs(:[]).with('client_action').returns('successful_subscription')
+      actual = @worker.succesfull_subscription?(message)
+      actual.should eq(true)
+    end
+
+    it 'checks the message and returns false' do
+      message.expects(:present?).returns(true)
+      message.stubs(:[]).with('client_action').returns('something_else')
+      actual = @worker.succesfull_subscription?(message)
+      actual.should eq(false)
+    end
+  end
+
   describe '#publish' do
     let(:channel) { 'some_channel' }
     let(:data) { 'some_message' }
