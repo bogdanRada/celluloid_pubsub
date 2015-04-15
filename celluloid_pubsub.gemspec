@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'celluloid-io', '~> 0.16.2', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '~> 0.5.0', '>= 0.5.0'
   s.add_runtime_dependency 'celluloid-websocket-client', '0.0.1'
-  s.add_runtime_dependency 'activesupport', '~> 4.2.0', '>= 4.2.0'
+  s.add_runtime_dependency 'activesupport', '>= 4.1.0'
 
   s.add_development_dependency 'rspec-rails', '~> 2.0', '>= 2.0'
   s.add_development_dependency 'guard', '~> 2.6.1', '>= 2.6'

@@ -76,11 +76,12 @@ module CelluloidPubsub
     def parse_options(options)
       raise 'Options is not a hash ' unless options.is_a?(Hash)
       @options = options.stringify_keys
-      @backlog = @options.fetch(:backlog, 1024)
-      @hostname = @options.fetch(:hostname, CelluloidPubsub::WebServer::HOST)
-      @port = @options.fetch(:port, CelluloidPubsub::WebServer::PORT)
-      @path = @options.fetch(:path, CelluloidPubsub::WebServer::PATH)
-      @spy = @options.fetch(:spy, false)
+      debug @options if debug_enabled?
+      @backlog = @options.fetch('backlog', 1024)
+      @hostname = @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
+      @port = @options.fetch('port', CelluloidPubsub::WebServer::PORT)
+      @path = @options.fetch('path', CelluloidPubsub::WebServer::PATH)
+      @spy = @options.fetch('spy', false)
     end
 
     #  checks if debug is enabled
