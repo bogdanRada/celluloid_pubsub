@@ -45,7 +45,7 @@ module CelluloidPubsub
     #
     # :nocov:
     def run
-      while !@websocket.closed? && message = try_read_websocket
+      while Actor.current.alive? && !@websocket.closed? && message = try_read_websocket
         handle_websocket_message(message)
       end
     end
