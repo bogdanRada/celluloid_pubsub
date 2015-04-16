@@ -1,14 +1,25 @@
 require 'bundler/setup'
 require 'celluloid_pubsub'
+require 'logger'
 
-ENV['DEBUG_CELLULOID'] = ARGV.map(&:downcase).include?('debug') ? 'true' : 'false'
+debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
+
+if debug_enabled == true
+  log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
+  puts log_file_path
+  FileUtils.mkdir_p(File.dirname(log_file_path))
+  log_file = File.open(log_file_path, 'w')
+  log_file.sync = true
+  Celluloid.logger = ::Logger.new(log_file_path)
+end
+
 # actor that subscribes to a channel
 class Subscriber
   include Celluloid
   include Celluloid::Logger
 
-  def initialize
-    @client = CelluloidPubsub::Client.connect(actor: Actor.current) do |ws|
+  def initialize(options = {})
+    @client = CelluloidPubsub::Client.connect({ actor: Actor.current }.merge(options)) do |ws|
       ws.subscribe('test_channel') # this will execute after the connection is opened
     end
   end
@@ -19,7 +30,7 @@ class Subscriber
       @client.publish('test_channel2', 'data' => ' subscriber got successfull subscription') # the message needs to be a Hash
     else
       puts "subscriber got message #{message.inspect}"
-      @client.publish('test_channel2', 'data' => "subscriber got #{message}") # the message needs to be a Hash
+      @client.unsubscribe('test_channel')
     end
   end
 
@@ -34,17 +45,16 @@ class Publisher
   include Celluloid
   include Celluloid::Logger
 
-  def initialize
-    @client = CelluloidPubsub::Client.connect(actor: Actor.current) do |ws|
+  def initialize(options = {})
+    @client = CelluloidPubsub::Client.connect({ actor: Actor.current }.merge(options)) do |ws|
       ws.subscribe('test_channel2') # this will execute after the connection is opened
     end
     @client.publish('test_channel', 'data' => 'my_message') # the message needs to be a Hash
-    @client.publish('test_channel', 'data' => 'my_message')
-    @client.publish('test_channel', 'data' => 'my_message')
   end
 
   def on_message(message)
     puts " publisher got #{message.inspect}"
+    @client.unsubscribe('test_channel2')
   end
 
   def on_close(code, reason)
@@ -53,7 +63,7 @@ class Publisher
   end
 end
 
-CelluloidPubsub::WebServer.supervise_as(:web_server)
-Subscriber.supervise_as(:subscriber)
-Publisher.supervise_as(:publisher)
+CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled)
+Subscriber.supervise_as(:subscriber, enable_debug: debug_enabled)
+Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
 sleep

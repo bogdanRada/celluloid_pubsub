@@ -78,7 +78,7 @@ module CelluloidPubsub
       #
       # @api public
       def debug_enabled?
-        CelluloidPubsub::WebServer.debug_enabled?
+        @options.fetch('enable_debug', false).to_s == 'true'
       end
 
       # subscribes to a channel . need to be used inside the connect block passed to the actor
@@ -119,6 +119,42 @@ module CelluloidPubsub
         async.chat(publishing_data)
       end
 
+      # unsubscribes current client from a channel
+      #
+      # @param [string] channel
+      #
+      # @return [void]
+      #
+      # @api public
+      def unsubscribe(channel)
+        publishing_data = { 'client_action' => 'unsubscribe', 'channel' => channel }
+        debug(" #{self.class}  sends:  #{publishing_data}") if debug_enabled?
+        async.chat(publishing_data)
+      end
+
+      # unsubscribes all clients subscribed to a channel
+      #
+      # @param [string] channel
+      #
+      # @return [void]
+      #
+      # @api public
+      def unsubscribe_clients(channel)
+        publishing_data = { 'client_action' => 'unsubscribe_clients', 'channel' => channel }
+        debug(" #{self.class}  sends:  #{publishing_data}") if debug_enabled?
+        async.chat(publishing_data)
+      end
+
+      # unsubscribes all clients from all channels
+      #
+      # @return [void]
+      #
+      # @api public
+      def unsubscribe_all
+        publishing_data = { 'client_action' => 'unsubscribe_all' }
+        debug(" #{self.class}  sends:  #{publishing_data}") if debug_enabled?
+        async.chat(publishing_data)
+      end
       #  callback executes after connection is opened and delegates action to actor
       #
       # @return [void]
