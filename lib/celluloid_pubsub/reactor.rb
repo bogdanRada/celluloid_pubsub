@@ -1,5 +1,6 @@
 require_relative './registry'
 module CelluloidPubsub
+  # rubocop:disable ClassLength
   # The reactor handles new connections. Based on what the client sends it either subscribes to a channel
   # or will publish to a channel or just dispatch to the server if command is neither subscribe, publish or unsubscribe
   #
@@ -44,10 +45,21 @@ module CelluloidPubsub
     #
     # :nocov:
     def run
-      while message = @websocket.read
+      while !@websocket.closed? && message = try_read_websocket
         handle_websocket_message(message)
       end
     end
+
+    def try_read_websocket
+      message = nil
+      begin
+        message = @websocket.read
+       rescue => e
+         debug(e) if @server.debug_enabled?
+      end
+      message
+    end
+
     # :nocov:
 
     # method used to parse a JSON object into a Hash object
@@ -136,8 +148,10 @@ module CelluloidPubsub
       case json_data['client_action']
         when 'unsubscribe_all'
           unsubscribe_all
+        when 'unsubscribe_clients'
+          async.unsubscribe_clients(json_data['channel'])
         when 'unsubscribe'
-          async.unsubscribe_client(json_data['channel'])
+          async.unsubscribe(json_data['channel'])
         when 'subscribe'
           async.start_subscriber(json_data['channel'], json_data)
         when 'publish'
@@ -168,13 +182,29 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def unsubscribe_client(channel)
+    def unsubscribe(channel)
       return unless channel.present?
       @channels.delete(channel) unless @channels.blank?
       @websocket.close if @channels.blank?
       @server.subscribers[channel].delete_if do |hash|
         hash[:reactor] == Actor.current
       end if @server.subscribers[channel].present?
+    end
+
+    # the method will unsubscribe all  clients subscribed to a channel by closing the
+    #
+    # @param [String] channel
+    #
+    # @return [void]
+    #
+    # @api public
+    def unsubscribe_clients(channel)
+      return if channel.blank? || @server.subscribers[channel].blank?
+      @server.subscribers[channel].each do |hash|
+        hash[:reactor].websocket.close
+        Celluloid::Actor.kill(hash[:reactor])
+      end
+      @server.subscribers[channel] = []
     end
 
     # the method will terminate the current actor
@@ -230,6 +260,7 @@ module CelluloidPubsub
       CelluloidPubsub::Registry.channels.map do |channel|
         @server.subscribers[channel].each do |hash|
           hash[:reactor].websocket.close
+          Celluloid::Actor.kill(hash[:reactor])
         end
         @server.subscribers[channel] = []
       end
