@@ -23,7 +23,7 @@ describe CelluloidPubsub::Client::PubSubWorker do
   before(:each) do
     Celluloid::WebSocket::Client.stubs(:new).returns(socket)
     socket.stubs(:text)
-    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor }, &blk)
+    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor, enable_debug: true }, &blk)
     @worker.stubs(:client).returns(socket)
     @worker.stubs(:debug)
     @worker.stubs(:async).returns(@worker)
@@ -63,7 +63,6 @@ describe CelluloidPubsub::Client::PubSubWorker do
 
   describe '#debug_enabled?' do
     it 'checks if debug is enabled' do
-      CelluloidPubsub::WebServer.expects(:debug_enabled?).returns(true)
       act = @worker.debug_enabled?
       act.should eq(true)
     end

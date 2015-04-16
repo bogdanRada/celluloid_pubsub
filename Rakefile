@@ -7,7 +7,7 @@ require 'yard-rspec'
 Coveralls::RakeTask.new
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
-  spec.rspec_opts = ['--backtrace '] if ENV['DEBUG']
+  spec.rspec_opts = ['--backtrace', '--fail-fast'] if ENV['DEBUG']
 end
 
 # desc "Prepare dummy application"
