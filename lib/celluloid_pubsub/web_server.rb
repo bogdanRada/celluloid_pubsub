@@ -90,19 +90,10 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      self.class.debug_enabled?
+      @options.fetch('enable_debug', false).to_s == 'true'
     end
 
-    #  checks if debug is enabled
-    #
-    # @return [boolean]
-    #
-    # @api public
-    def self.debug_enabled?
-      ENV['DEBUG_CELLULOID'].present? && (ENV['DEBUG_CELLULOID'] == 'true' || ENV['DEBUG_CELLULOID'] == true)
-    end
-
-    #  checks if debug is enabled
+    #  method for publishing data to a channel
     #
     # @param [String] current_topic The Channel to which the reactor instance {CelluloidPubsub::Rector} will publish the message to
     # @param [Object] message
@@ -112,8 +103,12 @@ module CelluloidPubsub
     # @api public
     def publish_event(current_topic, message)
       return if current_topic.blank? || message.blank? || @subscribers[current_topic].blank?
-      @subscribers[current_topic].each do |hash|
-        hash[:reactor].websocket << message
+      begin
+        @subscribers[current_topic].each do |hash|
+          hash[:reactor].websocket << message
+        end
+      rescue => e
+        debug("could not publish message #{message} into topic #{current_topic} because of #{e.inspect}") if debug_enabled?
       end
     end
 
