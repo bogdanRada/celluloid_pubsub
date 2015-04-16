@@ -50,6 +50,14 @@ module CelluloidPubsub
       end
     end
 
+    # will try to read the message from the websocket
+    # and if it fails will log the exception if debug is enabled
+    #
+    # @return [void]
+    #
+    # @api public
+    #
+    # :nocov:
     def try_read_websocket
       message = nil
       begin
