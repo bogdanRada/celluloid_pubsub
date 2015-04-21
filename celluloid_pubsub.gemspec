@@ -16,15 +16,15 @@ Gem::Specification.new do |s|
   s.test_files = s.files.grep(/^(spec)/)
   s.require_paths = ['lib']
 
-  s.add_runtime_dependency 'celluloid', '~> 0.16.0', '>= 0.16.0'
-  s.add_runtime_dependency 'celluloid-io', '~> 0.16.2', '>= 0.16.2'
-  s.add_runtime_dependency 'reel', '~> 0.5.0', '>= 0.5.0'
+  s.add_runtime_dependency 'celluloid', '~> 0.16', '>= 0.16.0'
+  s.add_runtime_dependency 'celluloid-io', '~> 0.16', '>= 0.16.2'
+  s.add_runtime_dependency 'reel', '~> 0.5', '>= 0.5.0'
   s.add_runtime_dependency 'celluloid-websocket-client', '0.0.1'
   s.add_runtime_dependency 'activesupport', '~> 4.1', '>= 4.1.0'
 
   s.add_development_dependency 'rspec-rails', '~> 2.0', '>= 2.0'
-  s.add_development_dependency 'guard', '~> 2.6.1', '>= 2.6'
-  s.add_development_dependency 'guard-rspec', '~> 4.2.9', '>= 4.2'
+  s.add_development_dependency 'guard', '~> 2.6', '>= 2.6'
+  s.add_development_dependency 'guard-rspec', '~> 4.2', '>= 4.2'
   s.add_development_dependency 'simplecov', '~> 0.9', '>= 0.9'
   s.add_development_dependency 'simplecov-summary', '~> 0.0.4', '>= 0.0.4'
   s.add_development_dependency 'mocha', '~> 1.1', '>= 1.1'
@@ -33,10 +33,10 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'rubocop', '0.29'
   s.add_development_dependency 'phare', '~> 0.6', '>= 0.6'
-  s.add_development_dependency 'yard', '~> 0.8.7', '>= 0.8.7'
+  s.add_development_dependency 'yard', '~> 0.8', '>= 0.8.7'
   s.add_development_dependency 'yard-rspec', '~> 0.1', '>= 0.1'
-  s.add_development_dependency 'redcarpet', '~> 3.2.2', '>= 3.2.2'
-  s.add_development_dependency 'github-markup', '~> 1.3.3', '>= 1.3.3'
-  s.add_development_dependency 'inch', '~> 0.5.10'
-  s.add_development_dependency 'guard-inch', '~> 0.1.0'
+  s.add_development_dependency 'redcarpet', '~> 3.2', '>= 3.2.2'
+  s.add_development_dependency 'github-markup', '~> 1.3', '>= 1.3.3'
+  s.add_development_dependency 'inch', '~> 0.5',  '>= 0.5.10'
+  s.add_development_dependency 'guard-inch', '~> 0.1',   '>= 0.1.0'
 end
