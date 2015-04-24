@@ -62,8 +62,8 @@ module CelluloidPubsub
       message = nil
       begin
         message = @websocket.read
-       rescue => e
-         debug(e) if @server.debug_enabled?
+      rescue => e
+        debug(e) if @server.debug_enabled?
       end
       message
     end
@@ -208,10 +208,7 @@ module CelluloidPubsub
     # @api public
     def unsubscribe_clients(channel)
       return if channel.blank? || @server.subscribers[channel].blank?
-      @server.subscribers[channel].each do |hash|
-        hash[:reactor].websocket.close
-        Celluloid::Actor.kill(hash[:reactor])
-      end
+      unsubscribe_from_channel(channel)
       @server.subscribers[channel] = []
     end
 
@@ -266,15 +263,25 @@ module CelluloidPubsub
     # @api public
     def unsubscribe_all
       CelluloidPubsub::Registry.channels.map do |channel|
-        @server.subscribers[channel].each do |hash|
-          hash[:reactor].websocket.close
-          Celluloid::Actor.kill(hash[:reactor])
-        end
+        unsubscribe_from_channel(channel)
         @server.subscribers[channel] = []
       end
 
       info 'clearing connections' if @server.debug_enabled?
       shutdown
+    end
+
+    # unsubscribes all actors from the specified chanel
+    #
+    # @param [String] channel
+    # @return [void]
+    #
+    # @api public
+    def unsubscribe_from_channel(channel)
+      @server.subscribers[channel].each do |hash|
+        hash[:reactor].websocket.close
+        Celluloid::Actor.kill(hash[:reactor])
+      end
     end
   end
 end
