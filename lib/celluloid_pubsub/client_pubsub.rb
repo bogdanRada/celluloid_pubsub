@@ -114,9 +114,7 @@ module CelluloidPubsub
       #
       # @api public
       def publish(channel, data)
-        publishing_data = { 'client_action' => 'publish', 'channel' => channel, 'data' => data }
-        debug(" #{self.class}  publishl to #{channel} message:  #{publishing_data}") if debug_enabled?
-        async.chat(publishing_data)
+        send_action('publish', channel, data)
       end
 
       # unsubscribes current client from a channel
@@ -127,9 +125,7 @@ module CelluloidPubsub
       #
       # @api public
       def unsubscribe(channel)
-        publishing_data = { 'client_action' => 'unsubscribe', 'channel' => channel }
-        debug(" #{self.class}  sends:  #{publishing_data}") if debug_enabled?
-        async.chat(publishing_data)
+        send_action('unsubscribe', channel)
       end
 
       # unsubscribes all clients subscribed to a channel
@@ -140,9 +136,7 @@ module CelluloidPubsub
       #
       # @api public
       def unsubscribe_clients(channel)
-        publishing_data = { 'client_action' => 'unsubscribe_clients', 'channel' => channel }
-        debug(" #{self.class}  sends:  #{publishing_data}") if debug_enabled?
-        async.chat(publishing_data)
+        send_action('unsubscribe_clients', channel)
       end
 
       # unsubscribes all clients from all channels
@@ -151,9 +145,7 @@ module CelluloidPubsub
       #
       # @api public
       def unsubscribe_all
-        publishing_data = { 'client_action' => 'unsubscribe_all' }
-        debug(" #{self.class}  sends:  #{publishing_data}") if debug_enabled?
-        async.chat(publishing_data)
+        send_action('unsubscribe_all')
       end
       #  callback executes after connection is opened and delegates action to actor
       #
@@ -198,6 +190,23 @@ module CelluloidPubsub
       end
 
     private
+
+      # method used to send an action to the webserver reactor , to a chanel and with data
+      #
+      # @param [String] action
+      # @param [String] channel
+      # @param [Hash] data
+      #
+      # @return [void]
+      #
+      # @api private
+      def send_action(action, channel = nil, data = {})
+        publishing_data = { 'client_action' => action }
+        publishing_data = publishing_data.merge('channel' => channel) if channel.present?
+        publishing_data = publishing_data.merge('data' => data) if data.present?
+        debug(" #{self.class}  sends:  #{publishing_data}") if debug_enabled?
+        async.chat(publishing_data)
+      end
 
       # method used to send messages to the webserver
       # checks too see if the message is a hash and if it is it will transform it to JSON and send it to the webser

@@ -16,6 +16,8 @@
      subject.stubs(:inspect).returns(subject)
      subject.stubs(:run)
      subject.work(websocket, server)
+     subject.stubs(:unsubscribe_from_channel).returns(true)
+     Celluloid::Actor.stubs(:kill).returns(true)
    end
 
    describe '#work' do
@@ -204,11 +206,8 @@
      let(:message) { { a: 'b' } }
 
      it 'adds subscribed' do
-       Celluloid::Actor.stubs(:kill).returns(true)
        CelluloidPubsub::Registry.stubs(:channels).returns([channel])
-       server.subscribers.stubs(:[]).with(channel).returns([{ reactor: subject, message: message }])
-       subject.websocket.expects(:close)
-       subject.expects(:shutdown)
+       subject.expects(:unsubscribe_from_channel).with(channel)
        subject.unsubscribe_all
      end
    end
