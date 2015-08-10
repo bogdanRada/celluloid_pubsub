@@ -1,4 +1,4 @@
-require 'celluloid'
+require 'celluloid/current'
 require 'celluloid/io'
 require 'reel'
 require 'celluloid/websocket/client'

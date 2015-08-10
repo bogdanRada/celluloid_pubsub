@@ -16,12 +16,10 @@ end
 # actor that subscribes to a channel
 class Subscriber
   include Celluloid
-  include Celluloid::Logger
+  include Celluloid::Internals::Logger
 
   def initialize(options = {})
-    @client = CelluloidPubsub::Client.connect({ actor: Actor.current }.merge(options)) do |ws|
-      ws.subscribe('test_channel') # this will execute after the connection is opened
-    end
+    @client = CelluloidPubsub::Client.connect({ actor: Actor.current,  channel: 'test_channel'  }.merge(options))
   end
 
   def on_message(message)
@@ -43,12 +41,10 @@ end
 # actor that publishes a message in a channel
 class Publisher
   include Celluloid
-  include Celluloid::Logger
+  include Celluloid::Internals::Logger
 
   def initialize(options = {})
-    @client = CelluloidPubsub::Client.connect({ actor: Actor.current }.merge(options)) do |ws|
-      ws.subscribe('test_channel2') # this will execute after the connection is opened
-    end
+    @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
     @client.publish('test_channel', 'data' => 'my_message') # the message needs to be a Hash
   end
 
@@ -63,7 +59,7 @@ class Publisher
   end
 end
 
-CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled)
-Subscriber.supervise_as(:subscriber, enable_debug: debug_enabled)
-Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
+CelluloidPubsub::WebServer.supervise(as: :web_server, args: [{enable_debug: debug_enabled}] )
+Subscriber.supervise(as: :subscriber,  args: [{enable_debug: debug_enabled}] )
+Publisher.supervise(as: :publisher,  args: [{enable_debug: debug_enabled}] )
 sleep

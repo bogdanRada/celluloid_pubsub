@@ -29,7 +29,7 @@ module CelluloidPubsub
   # @!attribute spy
   #   @return [Boolean] Enable this only if you want to enable debugging for the webserver
   class WebServer < Reel::Server::HTTP
-    include Celluloid::Logger
+    include Celluloid::Internals::Logger
 
     # The hostname on which the webserver runs on by default
     HOST = '0.0.0.0'
