@@ -15,7 +15,7 @@ module CelluloidPubsub
   class Reactor
     include Celluloid
     include Celluloid::IO
-    include Celluloid::Internals::Logger
+    include CelluloidPubsub::Config.config['logger_class']
 
     attr_accessor :websocket, :server, :channels
 
