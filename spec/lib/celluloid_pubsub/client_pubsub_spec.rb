@@ -19,11 +19,12 @@ describe CelluloidPubsub::Client::PubSubWorker do
   let(:options) { {} }
   let(:socket) { mock }
   let(:actor) { mock }
+  let(:channel) { 'some_channel' }
 
   before(:each) do
     Celluloid::WebSocket::Client.stubs(:new).returns(socket)
     socket.stubs(:text)
-    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor, enable_debug: true }, &blk)
+    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor, channel: channel, enable_debug: true }, &blk)
     @worker.stubs(:client).returns(socket)
     @worker.stubs(:debug)
     @worker.stubs(:async).returns(@worker)
@@ -32,7 +33,7 @@ describe CelluloidPubsub::Client::PubSubWorker do
 
   describe '#initialize' do
     it 'creates a object' do
-      @worker.connect_blk.should_not be_nil
+      @worker.channel.should eq channel
       @worker.actor.should eq actor
     end
   end
@@ -113,7 +114,7 @@ describe CelluloidPubsub::Client::PubSubWorker do
     let(:channel) { 'some_channel' }
     let(:data) { 'some_message' }
     it 'chats with the server' do
-      @worker.connect_blk.expects(:call)
+      @worker.expects(:subscribe).with(channel)
       @worker.on_open
     end
   end

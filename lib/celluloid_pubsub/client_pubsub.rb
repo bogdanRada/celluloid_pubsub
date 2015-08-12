@@ -28,7 +28,7 @@ module CelluloidPubsub
     class PubSubWorker
       include Celluloid
       include CelluloidPubsub::Config.config['logger_class']
-      attr_accessor :actor, :connect_blk, :client, :options, :hostname, :port, :path
+      attr_accessor :actor, :client, :options, :hostname, :port, :path, :channel
 
       #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
       #  when receiving messages from a channel
@@ -190,7 +190,7 @@ module CelluloidPubsub
         @actor.async.on_close(code, reason)
       end
 
-      private
+    private
 
       # method used to send an action to the webserver reactor , to a chanel and with data
       #
