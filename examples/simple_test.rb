@@ -19,7 +19,7 @@ class Subscriber
   include Celluloid::Internals::Logger
 
   def initialize(options = {})
-    @client = CelluloidPubsub::Client.connect({ actor: Actor.current,  channel: 'test_channel'  }.merge(options))
+    @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel' }.merge(options))
   end
 
   def on_message(message)
@@ -59,7 +59,7 @@ class Publisher
   end
 end
 
-CelluloidPubsub::WebServer.supervise(as: :web_server, args: [{enable_debug: debug_enabled}] )
-Subscriber.supervise(as: :subscriber,  args: [{enable_debug: debug_enabled}] )
-Publisher.supervise(as: :publisher,  args: [{enable_debug: debug_enabled}] )
+CelluloidPubsub::WebServer.supervise(as: :web_server, args: [{ enable_debug: debug_enabled }])
+Subscriber.supervise(as: :subscriber, args: [{ enable_debug: debug_enabled }])
+Publisher.supervise(as: :publisher, args: [{ enable_debug: debug_enabled }])
 sleep
