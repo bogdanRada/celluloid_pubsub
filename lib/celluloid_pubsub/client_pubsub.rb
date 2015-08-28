@@ -27,7 +27,7 @@ module CelluloidPubsub
     #   @return [String] The hostname on which the webserver runs on
     class PubSubWorker
       include Celluloid
-      include CelluloidPubsub::Config.config['logger_class']
+      include CelluloidPubsub::BackwardCompatible.config['logger_class']
       attr_accessor :actor, :client, :options, :hostname, :port, :path, :channel
 
       #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
