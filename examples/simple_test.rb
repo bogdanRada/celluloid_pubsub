@@ -10,13 +10,14 @@ if debug_enabled == true
   FileUtils.mkdir_p(File.dirname(log_file_path))
   log_file = File.open(log_file_path, 'w')
   log_file.sync = true
+  $CELLULOID_DEBUG = true
   Celluloid.logger = ::Logger.new(log_file_path)
 end
 
 # actor that subscribes to a channel
 class Subscriber
   include Celluloid
-  include Celluloid::Internals::Logger
+  include CelluloidPubsub::BackwardCompatible.config['logger_class']
 
   def initialize(options = {})
     @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel' }.merge(options))
@@ -41,7 +42,7 @@ end
 # actor that publishes a message in a channel
 class Publisher
   include Celluloid
-  include Celluloid::Internals::Logger
+  include CelluloidPubsub::BackwardCompatible.config['logger_class']
 
   def initialize(options = {})
     @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
