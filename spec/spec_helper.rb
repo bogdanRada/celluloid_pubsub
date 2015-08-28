@@ -28,8 +28,6 @@ end
 require 'bundler/setup'
 require 'celluloid_pubsub'
 
-require 'rspec/autorun'
-
 RSpec.configure do |config|
   require 'rspec/expectations'
   config.include RSpec::Matchers
@@ -46,11 +44,12 @@ RSpec.configure do |config|
     end
   end
 end
+CelluloidPubsub::Config.backward_compatible
 
 # class used for testing actions
 class TestActor
   include Celluloid
-  include Celluloid::Logger
+  include CelluloidPubsub::Config.config['logger_class']
 end
 
-TestActor.supervise_as(:test_actor)
+TestActor.supervise(as: :test_actor)
