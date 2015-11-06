@@ -17,7 +17,7 @@ module CelluloidPubsub
     # minor release version
     MINOR = 0
     # tiny release version
-    TINY = 20
+    TINY = 21
     # prelease version ( set this only if it is a prelease)
     PRE = nil
 

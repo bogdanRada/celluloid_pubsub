@@ -10,7 +10,7 @@ describe CelluloidPubsub::Client do
     expected = nil
     CelluloidPubsub::Client::PubSubWorker.stubs(:new).returns(expected)
     res = CelluloidPubsub::Client.connect(options, &blk)
-    res.should eq expected
+    expect(res).to eq expected
   end
 end
 
@@ -19,11 +19,12 @@ describe CelluloidPubsub::Client::PubSubWorker do
   let(:options) { {} }
   let(:socket) { mock }
   let(:actor) { mock }
+  let(:channel) { 'some_channel' }
 
   before(:each) do
     Celluloid::WebSocket::Client.stubs(:new).returns(socket)
     socket.stubs(:text)
-    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor, enable_debug: true }, &blk)
+    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor, channel: channel, enable_debug: true }, &blk)
     @worker.stubs(:client).returns(socket)
     @worker.stubs(:debug)
     @worker.stubs(:async).returns(@worker)
@@ -32,8 +33,8 @@ describe CelluloidPubsub::Client::PubSubWorker do
 
   describe '#initialize' do
     it 'creates a object' do
-      @worker.connect_blk.should_not be_nil
-      @worker.actor.should eq actor
+      expect(@worker.channel).to eq channel
+      expect(@worker.actor).to eq actor
     end
   end
 
@@ -46,25 +47,25 @@ describe CelluloidPubsub::Client::PubSubWorker do
 
     it 'parses options' do
       @worker.parse_options(custom_options)
-      @worker.actor.should eq(actor)
-      @worker.hostname.should eq(hostname)
-      @worker.port.should eq(port)
-      @worker.path.should eq(path)
+      expect(@worker.actor).to eq(actor)
+      expect(@worker.hostname).to eq(hostname)
+      expect(@worker.port).to eq(port)
+      expect(@worker.path).to eq(path)
     end
 
     it 'sets defaults' do
       @worker.parse_options({})
-      @worker.actor.should eq(nil)
-      @worker.hostname.should eq('0.0.0.0')
-      @worker.port.should eq(1234)
-      @worker.path.should eq('/ws')
+      expect(@worker.actor).to eq(nil)
+      expect(@worker.hostname).to eq('0.0.0.0')
+      expect(@worker.port).to eq(1234)
+      expect(@worker.path).to eq('/ws')
     end
   end
 
   describe '#debug_enabled?' do
     it 'checks if debug is enabled' do
       act = @worker.debug_enabled?
-      act.should eq(true)
+      expect(act).to eq(true)
     end
   end
 
@@ -89,14 +90,14 @@ describe CelluloidPubsub::Client::PubSubWorker do
       message.expects(:present?).returns(true)
       message.stubs(:[]).with('client_action').returns('successful_subscription')
       actual = @worker.succesfull_subscription?(message)
-      actual.should eq(true)
+      expect(actual).to eq(true)
     end
 
     it 'checks the message and returns false' do
       message.expects(:present?).returns(true)
       message.stubs(:[]).with('client_action').returns('something_else')
       actual = @worker.succesfull_subscription?(message)
-      actual.should eq(false)
+      expect(actual).to eq(false)
     end
   end
 
@@ -113,7 +114,7 @@ describe CelluloidPubsub::Client::PubSubWorker do
     let(:channel) { 'some_channel' }
     let(:data) { 'some_message' }
     it 'chats with the server' do
-      @worker.connect_blk.expects(:call)
+      @worker.expects(:subscribe).with(channel)
       @worker.on_open
     end
   end

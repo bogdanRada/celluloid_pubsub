@@ -28,8 +28,6 @@ end
 require 'bundler/setup'
 require 'celluloid_pubsub'
 
-require 'rspec/autorun'
-
 RSpec.configure do |config|
   require 'rspec/expectations'
   config.include RSpec::Matchers
