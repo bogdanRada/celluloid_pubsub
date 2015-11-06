@@ -28,7 +28,7 @@ module CelluloidPubsub
     class PubSubWorker
       include Celluloid
       include Celluloid::Logger
-      attr_accessor :actor, :connect_blk, :client, :options, :hostname, :port, :path
+      attr_accessor :actor, :client, :options, :hostname, :port, :path, :channel
 
       #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
       #  when receiving messages from a channel
@@ -44,10 +44,10 @@ module CelluloidPubsub
       # @return [void]
       #
       # @api public
-      def initialize(options, &connect_blk)
+      def initialize(options)
         parse_options(options)
         raise "#{self}: Please provide an actor in the options list!!!" if @actor.blank?
-        @connect_blk = connect_blk
+        raise "#{self}: Please provide an channel in the options list!!!" if @channel.blank?
         @client = Celluloid::WebSocket::Client.new("ws://#{@hostname}:#{@port}#{@path}", Actor.current)
       end
 
@@ -66,6 +66,7 @@ module CelluloidPubsub
         raise 'Options is not a hash' unless options.is_a?(Hash)
         @options = options.stringify_keys!
         @actor = @options.fetch('actor', nil)
+        @channel = @options.fetch('channel', nil)
         @hostname = @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
         @port = @options.fetch('port', CelluloidPubsub::WebServer::PORT)
         @path = @options.fetch('path', CelluloidPubsub::WebServer::PATH)
@@ -147,6 +148,7 @@ module CelluloidPubsub
       def unsubscribe_all
         send_action('unsubscribe_all')
       end
+
       #  callback executes after connection is opened and delegates action to actor
       #
       # @return [void]
@@ -154,7 +156,7 @@ module CelluloidPubsub
       # @api public
       def on_open
         debug("#{self.class} websocket connection opened") if debug_enabled?
-        @connect_blk.call Actor.current
+        async.subscribe(@channel)
       end
 
       # callback executes when actor receives a message from a subscribed channel
@@ -245,8 +247,8 @@ module CelluloidPubsub
     # @return [CelluloidPubsub::Client::PubSubWorker]
     #
     # @api public
-    def self.connect(options = {}, &connect_blk)
-      CelluloidPubsub::Client::PubSubWorker.new(options, &connect_blk)
+    def self.connect(options = {})
+      CelluloidPubsub::Client::PubSubWorker.new(options)
     end
   end
 end
