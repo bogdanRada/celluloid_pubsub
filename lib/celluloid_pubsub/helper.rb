@@ -10,10 +10,10 @@ def celluloid_version
   File.basename(celluloid_path).gsub("celluloid-", '')
 end
 
-def verify_celluloid_version(version_number, operator)
+def verify_celluloid_version(version_number, operator, options)
   parsed_version = Versionomy.parse(version_number)
   final_version = Versionomy.parse(celluloid_version.to_s)
-  final_version.unparse(:optional_fields => [:tiny])
+  final_version.unparse(options)
   final_version.send(operator,  parsed_version)
 rescue Versionomy::Errors::ParseError
   false

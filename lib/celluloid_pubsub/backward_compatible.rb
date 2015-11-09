@@ -23,7 +23,7 @@ module CelluloidPubsub
       end
 
       def version_less_than_sixten?
-        verify_celluloid_version(CelluloidPubsub::BackwardCompatible::SIXTEEN_VERSION, '<=')
+        verify_celluloid_version(CelluloidPubsub::BackwardCompatible::SIXTEEN_VERSION, '<=', :optional_fields => [:tiny])
       end
 
     end

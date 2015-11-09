@@ -7,11 +7,14 @@ debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
 if debug_enabled == true
   log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
   puts log_file_path
+  puts CelluloidPubsub::BackwardCompatible.celluloid_path
+  puts CelluloidPubsub::BackwardCompatible.celluloid_version
+  puts CelluloidPubsub::BackwardCompatible.version_less_than_sixten?
   FileUtils.rm(log_file_path) if File.exist?(log_file_path)
   FileUtils.mkdir_p(File.dirname(log_file_path))
   log_file = File.open(log_file_path, 'w')
   log_file.sync = true
-  $CELLULOID_DEBUG = true 
+  $CELLULOID_DEBUG = true
   Celluloid.logger = ::Logger.new(log_file_path)
 end
 
