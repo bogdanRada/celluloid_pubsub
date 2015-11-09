@@ -7,10 +7,11 @@ debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
 if debug_enabled == true
   log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
   puts log_file_path
+  FileUtils.rm(log_file_path) if File.exist?(log_file_path)
   FileUtils.mkdir_p(File.dirname(log_file_path))
   log_file = File.open(log_file_path, 'w')
   log_file.sync = true
-  $CELLULOID_DEBUG = true
+  $CELLULOID_DEBUG = true 
   Celluloid.logger = ::Logger.new(log_file_path)
 end
 
@@ -60,7 +61,13 @@ class Publisher
   end
 end
 
-CelluloidPubsub::WebServer.supervise(as: :web_server, args: [{ enable_debug: debug_enabled }])
-Subscriber.supervise(as: :subscriber, args: [{ enable_debug: debug_enabled }])
-Publisher.supervise(as: :publisher, args: [{ enable_debug: debug_enabled }])
+if CelluloidPubsub::BackwardCompatible.version_less_than_sixten?
+  CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled)
+  Subscriber.supervise_as(:subscriber, enable_debug: debug_enabled)
+  Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
+else
+  CelluloidPubsub::WebServer.supervise(as: :web_server, args: [{ enable_debug: debug_enabled }])
+  Subscriber.supervise(as: :subscriber, args: [{ enable_debug: debug_enabled }])
+  Publisher.supervise(as: :publisher, args: [{ enable_debug: debug_enabled }])
+end
 sleep

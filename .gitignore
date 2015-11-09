@@ -17,4 +17,3 @@ Gemfile.lock
 .yardoc/
 doc/
 bin/
-examples/log/**/*
