@@ -13,7 +13,7 @@ end
 def verify_celluloid_version(version_number, operator)
   parsed_version = Versionomy.parse(version_number)
   final_version = Versionomy.parse(celluloid_version.to_s)
-  final_version <=  parsed_version
+  final_version.major == parsed_version.major && final_version.minor <= parsed_version.minor
  rescue Versionomy::Errors::ParseError
    false
 end

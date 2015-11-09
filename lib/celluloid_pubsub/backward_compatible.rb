@@ -3,7 +3,7 @@ module CelluloidPubsub
   # class used to store the config with backward compatible classes
   class BackwardCompatible
     extend Helper
-    SIXTEEN_VERSION = "0.16.0"
+    SIXTEEN_VERSION = "0.16"
 
     class << self
       attr_accessor :config
