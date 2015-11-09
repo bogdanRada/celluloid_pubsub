@@ -148,6 +148,7 @@ module CelluloidPubsub
       def unsubscribe_all
         send_action('unsubscribe_all')
       end
+
       #  callback executes after connection is opened and delegates action to actor
       #
       # @return [void]
