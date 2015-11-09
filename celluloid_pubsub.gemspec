@@ -16,11 +16,13 @@ Gem::Specification.new do |s|
   s.test_files = s.files.grep(/^(spec)/)
   s.require_paths = ['lib']
 
-  s.add_runtime_dependency 'celluloid', '>= 0.17', '>= 0.17.0'
-  s.add_runtime_dependency 'celluloid-io', '>= 0.17', '>= 0.17'
+
+  s.add_runtime_dependency 'celluloid', '>= 0.16', '~> 0.16.0'
+  s.add_runtime_dependency 'celluloid-io', '>= 0.16', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '>= 0.5', '>= 0.5.0'
   s.add_runtime_dependency 'celluloid-websocket-client', '0.0.1'
   s.add_runtime_dependency 'activesupport', '>= 4.1', '>= 4.1.0'
+  s.add_runtime_dependency 'versionomy', '>= 0.4', '>= 0.4.4'
 
   s.add_development_dependency 'rspec-rails', '~> 3.3', '>= 3.3'
   s.add_development_dependency 'guard', '~> 2.13', '>= 2.13'
