@@ -6,7 +6,7 @@ celluloid_pubsub
 [![Build Status](https://travis-ci.org/bogdanRada/celluloid_pubsub.png?branch=master,develop)](https://travis-ci.org/bogdanRada/celluloid_pubsub)
 [![Coverage Status](https://coveralls.io/repos/bogdanRada/celluloid_pubsub/badge.svg?branch=master)](https://coveralls.io/r/bogdanRada/celluloid_pubsub?branch=master)
 [![Code Climate](https://codeclimate.com/github/bogdanRada/celluloid_pubsub/badges/gpa.svg)](https://codeclimate.com/github/bogdanRada/celluloid_pubsub)
-[![Repo Size](https://reposs.herokuapp.com/?path=bogdanRada/celluloid_pubsub)](https://github.com/bogdanRada/celluloid_pubsub)
+[![Repo Size](https://ruby-gem-downloads-badge.herokuapp.com/repo_size/bogdanRada/celluloid_pubsub)](https://github.com/bogdanRada/celluloid_pubsub)
 [![Gem Downloads](https://ruby-gem-downloads-badge.herokuapp.com/celluloid_pubsub?type=total&style=dynamic)](https://github.com/bogdanRada/celluloid_pubsub)
 [![Documentation Status](https://inch-ci.org/github/bogdanRada/celluloid_pubsub.svg?branch=master)](https://inch-ci.org/github/bogdanRada/celluloid_pubsubb)
 [![Maintenance Status](http://stillmaintained.com/bogdanRada/celluloid_pubsub.png)](https://github.com/bogdanRada/celluloid_pubsub)
