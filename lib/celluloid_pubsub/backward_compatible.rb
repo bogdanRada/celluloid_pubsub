@@ -22,9 +22,8 @@ module CelluloidPubsub
       end
 
       def version_less_than_sixten?
-        verify_celluloid_version("0.16", '<=', :optional_fields => [:tiny])
+        verify_celluloid_version('0.16', '<=', optional_fields: [:tiny])
       end
-
     end
   end
 end

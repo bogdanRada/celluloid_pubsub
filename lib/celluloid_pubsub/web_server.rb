@@ -58,8 +58,6 @@ module CelluloidPubsub
       @subscribers = {}
       info "CelluloidPubsub::WebServer example starting on #{@hostname}:#{@port}" if debug_enabled?
       super(@hostname, @port, { spy: @spy, backlog: @backlog }, &method(:on_connection))
-      rescue
-      # fail silently
     end
     # :nocov:
 
