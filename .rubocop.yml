@@ -4,6 +4,7 @@ AllCops:
     - bin/**/*
     - Guardfile
     - vendor/**/**
+    - examples/**/**
 
 Documentation:
   Enabled: true
