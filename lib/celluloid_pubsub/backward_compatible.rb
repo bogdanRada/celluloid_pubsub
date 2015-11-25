@@ -22,7 +22,7 @@ module CelluloidPubsub
       end
 
       def version_less_than_sixten?
-        verify_gem_version('celluloid', '0.16', operator: '<=', optional_fields: [:tiny])
+        verify_gem_version('celluloid', '0.16', operator: '<=')
       end
     end
   end
