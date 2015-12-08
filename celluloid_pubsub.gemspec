@@ -22,9 +22,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'http', '~> 0.9.8', '>= 0.9.8' # TODO: remove this once fixed in reel gem
   s.add_runtime_dependency 'celluloid-websocket-client', '0.0.1'
   s.add_runtime_dependency 'activesupport', '~> 4.1', '>= 4.1.0'
-  s.add_runtime_dependenc 'celluloid-redis'
-  s.add_runtime_dependenc 'json'
-  s.add_runtime_dependenc 'redis'
+  s.add_runtime_dependency 'celluloid-redis', '~>0.0', '>= 0.0.2'
+  s.add_runtime_dependency 'json', '~> 1.8', '>= 1.8.3'
+  s.add_runtime_dependency 'redis', '~>3.2', '>= 3.2.2'
 
   s.add_development_dependency 'rspec-rails', '~> 3.3', '>= 3.3'
   s.add_development_dependency 'guard', '~> 2.13', '>= 2.13'
