@@ -237,7 +237,7 @@ module CelluloidPubsub
       return unless channel.present?
       add_subscriber_to_channel(channel, message)
       debug "Subscribed to #{channel} with #{message}" if @server.debug_enabled?
-      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json
+      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json unless @server.redis_enabled?
     end
 
     # adds the curent actor the list of the subscribers for a particular channel

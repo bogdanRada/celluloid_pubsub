@@ -38,7 +38,7 @@ module CelluloidPubsub
     # The request path that the webserver accepts by default
     PATH = '/ws'
 
-    attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy
+    attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy, :use_redis
 
     #  receives a list of options that are used to configure the webserver
     #
@@ -58,6 +58,7 @@ module CelluloidPubsub
       @subscribers = {}
       info "CelluloidPubsub::WebServer example starting on #{@hostname}:#{@port}" if debug_enabled?
       super(@hostname, @port, { spy: @spy, backlog: @backlog }, &method(:on_connection))
+      CelluloidPubsub::Redis.connect(use_redis: @use_redis) if redis_enabled? && !CelluloidPubsub::Redis.connected?
     end
     # :nocov:
 
@@ -82,6 +83,7 @@ module CelluloidPubsub
       @port = @options.fetch('port', CelluloidPubsub::WebServer::PORT)
       @path = @options.fetch('path', CelluloidPubsub::WebServer::PATH)
       @spy = @options.fetch('spy', false)
+      @use_redis = @options.fetch('use_redis', false)
     end
 
     #  checks if debug is enabled
@@ -92,6 +94,11 @@ module CelluloidPubsub
     def debug_enabled?
       @options.fetch('enable_debug', false).to_s == 'true'
     end
+
+    def redis_enabled?
+      @use_redis.to_s.downcase == 'true'
+    end
+
 
     #  method for publishing data to a channel
     #
@@ -104,8 +111,12 @@ module CelluloidPubsub
     def publish_event(current_topic, message)
       return if current_topic.blank? || message.blank? || @subscribers[current_topic].blank?
       begin
-        @subscribers[current_topic].each do |hash|
-          hash[:reactor].websocket << message
+        if redis_enabled?
+          CelluloidPubsub::Redis.connection.publish(current_topic, message)
+        else
+          @subscribers[current_topic].each do |hash|
+            hash[:reactor].websocket << message
+          end
         end
       rescue => e
         debug("could not publish message #{message} into topic #{current_topic} because of #{e.inspect}") if debug_enabled?
@@ -172,7 +183,7 @@ module CelluloidPubsub
     def route_websocket(socket)
       if socket.url == @path
         info 'Reactor handles new socket connection' if debug_enabled?
-        reactor = CelluloidPubsub::Reactor.new
+        reactor = redis_enabled? ? CelluloidPubsub::RedisReactor.new : CelluloidPubsub::Reactor.new
         Actor.current.link reactor
         reactor.async.work(socket, Actor.current)
       else
