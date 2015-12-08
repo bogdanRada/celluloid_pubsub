@@ -99,7 +99,6 @@ module CelluloidPubsub
       @use_redis.to_s.downcase == 'true'
     end
 
-
     #  method for publishing data to a channel
     #
     # @param [String] current_topic The Channel to which the reactor instance {CelluloidPubsub::Rector} will publish the message to
