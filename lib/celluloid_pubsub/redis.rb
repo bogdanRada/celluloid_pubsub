@@ -8,8 +8,8 @@ module CelluloidPubsub
     end
 
     def self.connect(options={})
-      options.stringify_keys!
-      if options['use_redis'].to_s == 'true'
+      options.stringify_keys! if options.present?
+      if options['use_redis'].to_s.downcase == 'true'
         require 'redis'
         require 'celluloid/redis'
         require 'redis/connection/celluloid'
