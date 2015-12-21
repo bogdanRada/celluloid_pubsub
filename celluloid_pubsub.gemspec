@@ -19,7 +19,8 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'celluloid', '>= 0.16', '>= 0.16.0'
   s.add_runtime_dependency 'celluloid-io', '>= 0.16', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '>= 0.5', '>= 0.5.0'
-  s.add_runtime_dependency 'celluloid-websocket-client', '0.0.2'
+  s.add_runtime_dependency 'http', '~> 0.9.8', '>= 0.9.8' # TODO: remove this once fixed in reel gem
+  s.add_runtime_dependency 'celluloid-websocket-client', '0.0.1'
   s.add_runtime_dependency 'activesupport', '>= 4.1', '>= 4.1.0'
   s.add_runtime_dependency 'versionomy', '>= 0.4', '>= 0.4.4'
 
