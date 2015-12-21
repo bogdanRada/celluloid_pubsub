@@ -29,7 +29,7 @@ module CelluloidPubsub
   # @!attribute spy
   #   @return [Boolean] Enable this only if you want to enable debugging for the webserver
   class WebServer < Reel::Server::HTTP
-    include CelluloidPubsub::BackwardCompatible.config['logger_class']
+    include CelluloidPubsub::BaseActor.config['logger_class']
 
     # The hostname on which the webserver runs on by default
     HOST = '0.0.0.0'
@@ -104,7 +104,8 @@ module CelluloidPubsub
     def publish_event(current_topic, message)
       return if current_topic.blank? || message.blank? || @subscribers[current_topic].blank?
       begin
-        @subscribers[current_topic].each do |hash|
+        topic_subscribers = @subscribers[current_topic].dup
+        topic_subscribers.each do |hash|
           hash[:reactor].websocket << message
         end
       rescue => e
