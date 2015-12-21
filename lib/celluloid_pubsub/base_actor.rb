@@ -14,7 +14,7 @@ module CelluloidPubsub
       end
 
       def celluloid_logger_class
-        if version_less_than_sixten?
+        if version_less_than_seventeen?
           Celluloid::Logger
         else
           Celluloid::Internals::Logger
@@ -25,12 +25,12 @@ module CelluloidPubsub
         find_loaded_gem_property('celluloid', 'version')
       end
 
-      def version_less_than_sixten?
-        verify_gem_version('celluloid', '0.16', operator: '<=')
+      def version_less_than_seventeen?
+        verify_gem_version('celluloid', '0.17', operator: '<')
       end
 
       def setup_actor_supervision(class_name, options)
-        if version_less_than_sixten?
+        if version_less_than_seventeen?
           class_name.supervise_as(options[:actor_name], options[:args])
         else
           class_name.supervise(as: options[:actor_name], args: [options[:args]])
@@ -45,7 +45,7 @@ module CelluloidPubsub
   end
 end
 
-if CelluloidPubsub::BaseActor.version_less_than_sixten?
+if CelluloidPubsub::BaseActor.version_less_than_seventeen?
   require 'celluloid'
 else
   require 'celluloid/current'
