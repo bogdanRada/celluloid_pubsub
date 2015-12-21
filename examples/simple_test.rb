@@ -7,9 +7,8 @@ debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
 if debug_enabled == true
   log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
   puts log_file_path
-  puts CelluloidPubsub::BackwardCompatible.celluloid_path
-  puts CelluloidPubsub::BackwardCompatible.celluloid_version
-  puts CelluloidPubsub::BackwardCompatible.version_less_than_sixten?
+  puts CelluloidPubsub::BaseActor.celluloid_version
+  puts CelluloidPubsub::BaseActor.version_less_than_sixten?
   FileUtils.rm(log_file_path) if File.exist?(log_file_path)
   FileUtils.mkdir_p(File.dirname(log_file_path))
   log_file = File.open(log_file_path, 'w')
@@ -19,9 +18,7 @@ if debug_enabled == true
 end
 
 # actor that subscribes to a channel
-class Subscriber
-  include Celluloid
-  include CelluloidPubsub::BackwardCompatible.config['logger_class']
+class Subscriber < CelluloidPubsub::BaseActor
 
   def initialize(options = {})
     @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel' }.merge(options))
@@ -44,9 +41,7 @@ class Subscriber
 end
 
 # actor that publishes a message in a channel
-class Publisher
-  include Celluloid
-  include CelluloidPubsub::BackwardCompatible.config['logger_class']
+class Publisher < CelluloidPubsub::BaseActor
 
   def initialize(options = {})
     @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
@@ -64,13 +59,8 @@ class Publisher
   end
 end
 
-if CelluloidPubsub::BackwardCompatible.version_less_than_sixten?
-  CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled)
-  Subscriber.supervise_as(:subscriber, enable_debug: debug_enabled)
-  Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
-else
-  CelluloidPubsub::WebServer.supervise(as: :web_server, args: [{ enable_debug: debug_enabled }])
-  Subscriber.supervise(as: :subscriber, args: [{ enable_debug: debug_enabled }])
-  Publisher.supervise(as: :publisher, args: [{ enable_debug: debug_enabled }])
-end
+CelluloidPubsub::BaseActor.setup_actor_supervision(CelluloidPubsub::WebServer, actor_name: :web_server, args: {enable_debug: debug_enabled })
+CelluloidPubsub::BaseActor.setup_actor_supervision(Subscriber, actor_name: :subscriber, args: {enable_debug: debug_enabled })
+CelluloidPubsub::BaseActor.setup_actor_supervision(Publisher, actor_name: :publisher, args: {enable_debug: debug_enabled })
+
 sleep
