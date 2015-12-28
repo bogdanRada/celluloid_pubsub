@@ -19,7 +19,7 @@ class Subscriber
   include Celluloid::Logger
 
   def initialize(options = {})
-    @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel' }.merge(options))
+    @client = CelluloidPubsub::Client.new({ actor: Actor.current, channel: 'test_channel' }.merge(options))
   end
 
   def on_message(message)
@@ -44,7 +44,7 @@ class Publisher
   include Celluloid::Logger
 
   def initialize(options = {})
-    @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
+    @client = CelluloidPubsub::Client.new({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
     @client.publish('test_channel', 'data' => 'my_message') # the message needs to be a Hash
   end
 
