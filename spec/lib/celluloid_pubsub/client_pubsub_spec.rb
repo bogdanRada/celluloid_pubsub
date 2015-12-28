@@ -3,32 +3,23 @@
 require 'spec_helper'
 
 describe CelluloidPubsub::Client do
-  let(:options) { {} }
-  let(:blk) { proc { |a| puts a } }
-
-  it 'runs the connect method' do
-    expected = nil
-    CelluloidPubsub::Client::PubSubWorker.stubs(:new).returns(expected)
-    res = CelluloidPubsub::Client.connect(options, &blk)
-    expect(res).to eq expected
-  end
-end
-
-describe CelluloidPubsub::Client::PubSubWorker do
   let(:blk) { proc { |a| puts a } }
   let(:options) { {} }
   let(:socket) { mock }
   let(:actor) { mock }
+  let(:connection) { mock }
   let(:channel) { 'some_channel' }
 
   before(:each) do
-    Celluloid::WebSocket::Client.stubs(:new).returns(socket)
-    socket.stubs(:text)
-    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor, channel: channel, enable_debug: true }, &blk)
+    Celluloid::WebSocket::Client.stubs(:new).returns(connection)
+    @worker = CelluloidPubsub::Client.new({ 'actor' => actor, channel: channel, enable_debug: true }, &blk)
     @worker.stubs(:client).returns(socket)
-    @worker.stubs(:debug)
+    @worker.stubs(:debug).returns(true)
     @worker.stubs(:async).returns(@worker)
     actor.stubs(:async).returns(actor)
+    socket.stubs(:terminate).returns(true)
+    connection.stubs(:terminate).returns(true)
+    connection.stubs(:text).returns(true)
   end
 
   describe '#initialize' do
@@ -132,12 +123,11 @@ describe CelluloidPubsub::Client::PubSubWorker do
 
   describe '#on_close' do
     let(:channel) { 'some_channel' }
-    let(:code) { 'some_message' }
-    let(:reason) { 'some reason' }
+    let(:code) { 'some_code' }
+    let(:reason) { 'some_reason' }
 
     it 'chats with the server' do
-      @worker.client.expects(:terminate)
-      @worker.actor.expects(:on_close).with(code, reason)
+      actor.expects(:on_close).with(code, reason).returns(true)
       @worker.on_close(code, reason)
     end
   end
@@ -149,12 +139,12 @@ describe CelluloidPubsub::Client::PubSubWorker do
     let(:json) { { action: 'message', message: data } }
     it 'chats witout hash' do
       JSON.expects(:dump).with(json).returns(json)
-      @worker.client.expects(:text).with(json)
+      connection.expects(:text).with(json)
       @worker.send(:chat, data)
     end
 
     it 'chats with a hash' do
-      @worker.client.expects(:text).with(data_hash.to_json)
+      connection.expects(:text).with(data_hash.to_json)
       @worker.send(:chat, data_hash)
     end
   end
