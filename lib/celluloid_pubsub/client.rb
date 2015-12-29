@@ -1,3 +1,4 @@
+require_relative './helper'
 module CelluloidPubsub
   # worker that subscribes to a channel or publishes to a channel
   # if it used to subscribe to a channel the worker will dispatch the messages to the actor that made the
@@ -9,8 +10,8 @@ module CelluloidPubsub
   # @!attribute connect_blk
   #   @return [Proc] Block  that will execute after the connection is opened
   #
-  # @!attribute client
-  #   @return [Celluloid::WebSocket::Client] A websocket client that is used to chat witht the webserver
+  # @!attribute connection
+  #   @return [Celluloid::WebSocket::Client] A websocket connection that is used to chat witht the webserver
   #
   # @!attribute options
   #   @return [Hash] the options that can be used to connect to webser and send additional data
@@ -26,7 +27,9 @@ module CelluloidPubsub
   class Client
     include Celluloid
     include Celluloid::Logger
-    attr_accessor :actor, :client, :options, :hostname, :port, :path, :channel
+    include CelluloidPubsub::Helper
+
+    attr_reader :actor, :connection, :options, :hostname, :port, :path, :channel
     finalizer :shutdown
     #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
     #  when receiving messages from a channel
@@ -43,12 +46,45 @@ module CelluloidPubsub
     #
     # @api public
     def initialize(options)
-      parse_options(options)
+      @options = options.stringify_keys!
+      @actor ||= @options.fetch('actor', nil)
+      @channel ||= @options.fetch('channel', nil)
       raise "#{self}: Please provide an actor in the options list!!!" if @actor.blank?
       raise "#{self}: Please provide an channel in the options list!!!" if @channel.blank?
-      @actor.link Actor.current if @actor.respond_to?(:link)
-      @client = Celluloid::WebSocket::Client.new("ws://#{@hostname}:#{@port}#{@path}", Actor.current)
-      Actor.current.link @client
+      supervise_actors
+    end
+
+    # the method will link the current actor to the actor that is attached to, and the connection to the current actor
+    #
+    # @return [void]
+    #
+    # @api public
+    def supervise_actors
+      current_actor = Actor.current
+      @actor.link current_actor if @actor.respond_to?(:link)
+      current_actor.link connection
+    end
+
+    # the method will return the client that is used to
+    #
+    #
+    # @return [Celluloid::WebSocket::Client] the websocket connection used to connect to server
+    #
+    # @api public
+    def connection
+      @connection ||= Celluloid::WebSocket::Client.new("ws://#{hostname}:#{port}#{path}", Actor.current)
+    end
+
+    def hostname
+      @hostname ||= @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
+    end
+
+    def port
+      @port ||= @options.fetch('port', CelluloidPubsub::WebServer::PORT)
+    end
+
+    def path
+      @path ||= @options.fetch('path', CelluloidPubsub::WebServer::PATH)
     end
 
     # the method will terminate the current actor
@@ -58,29 +94,8 @@ module CelluloidPubsub
     #
     # @api public
     def shutdown
-      debug "#{self.class} tries to 'shudown'" if debug_enabled?
+      log_debug "#{self.class} tries to 'shudown'"
       terminate
-    end
-
-    # check the options list for values and sets default values if not found
-    #
-    # @param  [Hash]  options the options that can be used to connect to webser and send additional data
-    # @option options [String] :actor The actor that made the connection
-    # @option options [String]:hostname The hostname on which the webserver runs on
-    # @option options [String] :port The port on which the webserver runs on
-    # @option options [String] :path The request path that the webserver accepts
-    #
-    # @return [void]
-    #
-    # @api public
-    def parse_options(options)
-      raise 'Options is not a hash' unless options.is_a?(Hash)
-      @options = options.stringify_keys!
-      @actor = @options.fetch('actor', nil)
-      @channel = @options.fetch('channel', nil)
-      @hostname = @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
-      @port = @options.fetch('port', CelluloidPubsub::WebServer::PORT)
-      @path = @options.fetch('path', CelluloidPubsub::WebServer::PATH)
     end
 
     #  checks if debug is enabled
@@ -101,19 +116,8 @@ module CelluloidPubsub
     #
     # @api public
     def subscribe(channel)
-      debug("#{@actor.class} tries to subscribe to channel  #{channel}") if debug_enabled?
+      log_debug("#{@actor.class} tries to subscribe to channel  #{channel}")
       async.send_action('subscribe', channel)
-    end
-
-    # checks if the message has the successfull subscription action
-    #
-    # @param [string] message
-    #
-    # @return [void]
-    #
-    # @api public
-    def succesfull_subscription?(message)
-      message.present? && message['client_action'].present? && message['client_action'] == 'successful_subscription'
     end
 
     # publishes to a channel some data (can be anything)
@@ -165,8 +169,12 @@ module CelluloidPubsub
     #
     # @api public
     def on_open
-      debug("#{@actor.class} websocket connection opened") if debug_enabled?
+      log_debug("#{@actor.class} websocket connection opened")
       async.subscribe(@channel)
+    end
+
+    def log_debug(message)
+      debug message if debug_enabled?
     end
 
     # callback executes when actor receives a message from a subscribed channel
@@ -179,9 +187,8 @@ module CelluloidPubsub
     #
     # @api public
     def on_message(data)
-      debug("#{@actor.class} received  plain #{data}") if debug_enabled?
       message = JSON.parse(data)
-      debug("#{@actor.class} received JSON  #{message}") if debug_enabled?
+      log_debug("#{@actor.class} received JSON  #{message}")
       @actor.async.on_message(message)
     end
 
@@ -195,9 +202,9 @@ module CelluloidPubsub
     #
     # @api public
     def on_close(code, reason)
-      @client.terminate
+      connection.terminate
       terminate
-      debug("#{@actor.class} dispatching on close  #{code} #{reason}") if debug_enabled?
+      log_debug("#{@actor.class} dispatching on close  #{code} #{reason}")
       @actor.async.on_close(code, reason)
     end
 
@@ -213,9 +220,8 @@ module CelluloidPubsub
     #
     # @api private
     def send_action(action, channel = nil, data = {})
-      publishing_data = { 'client_action' => action }
-      publishing_data = publishing_data.merge('channel' => channel) if channel.present?
-      publishing_data = publishing_data.merge('data' => data) if data.present?
+      data = data.is_a?(Hash) ? data : {}
+      publishing_data = { 'client_action' => action, 'channel' => channel, 'data' => data }.reject { |_key, value| value.blank? }
       async.chat(publishing_data)
     end
 
@@ -232,12 +238,11 @@ module CelluloidPubsub
       final_message = nil
       if message.is_a?(Hash)
         final_message = message.to_json
-        debug("#{@actor.class} sends #{message.to_json}") if debug_enabled?
       else
         final_message = JSON.dump(action: 'message', message: message)
-        debug("#{@actor.class} sends JSON  #{final_message}") if debug_enabled?
       end
-      @client.text final_message
+      log_debug("#{@actor.class} sends JSON #{final_message}")
+      connection.text final_message
     end
   end
 end

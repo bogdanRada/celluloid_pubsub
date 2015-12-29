@@ -1,23 +1,34 @@
 module CelluloidPubsub
+  # class that handles redis connection
   class Redis
     class << self
+      include Celluloid::Logger
+
       @connected ||= false
       attr_accessor :connected, :connection
 
       alias_method :connected?, :connected
 
-      def connect(_options = {})
+      def connect(&block)
         require 'eventmachine'
         require 'em-hiredis'
+        run_the_eventmachine(&block)
+        setup_em_exception_handler
+      end
+
+    private
+
+      def run_the_eventmachine(&block)
         EM.run do
           @connection = EM::Hiredis.connect
           @connected = true
-          yield @connection if block_given?
+          block.call @connection
         end
+      end
+
+      def setup_em_exception_handler
         EM.error_handler do |error|
-          unless error.is_a?(Interrupt)
-            puts error.inspect
-          end
+          debug error
         end
       end
     end

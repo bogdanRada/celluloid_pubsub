@@ -5,19 +5,19 @@ require 'spec_helper'
 describe CelluloidPubsub::Client do
   let(:blk) { proc { |a| puts a } }
   let(:options) { {} }
-  let(:socket) { mock }
   let(:actor) { mock }
   let(:connection) { mock }
   let(:channel) { 'some_channel' }
 
   before(:each) do
-    Celluloid::WebSocket::Client.stubs(:new).returns(connection)
-    @worker = CelluloidPubsub::Client.new({ 'actor' => actor, channel: channel, enable_debug: true }, &blk)
-    @worker.stubs(:client).returns(socket)
+    CelluloidPubsub::Client.any_instance.stubs(:supervise_actors).returns(true)
+    CelluloidPubsub::Client.any_instance.stubs(:connection).returns(connection)
+    @worker = CelluloidPubsub::Client.new(actor: actor, channel: channel, enable_debug: false)
     @worker.stubs(:debug).returns(true)
     @worker.stubs(:async).returns(@worker)
     actor.stubs(:async).returns(actor)
-    socket.stubs(:terminate).returns(true)
+    actor.stubs(:respond_to?).returns(false)
+    actor.stubs(:terminate).returns(true)
     connection.stubs(:terminate).returns(true)
     connection.stubs(:text).returns(true)
   end
@@ -56,7 +56,7 @@ describe CelluloidPubsub::Client do
   describe '#debug_enabled?' do
     it 'checks if debug is enabled' do
       act = @worker.debug_enabled?
-      expect(act).to eq(true)
+      expect(act).to eq(false)
     end
   end
 
