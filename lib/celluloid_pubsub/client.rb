@@ -27,7 +27,7 @@ module CelluloidPubsub
     include Celluloid
     include Celluloid::Logger
     attr_accessor :actor, :client, :options, :hostname, :port, :path, :channel
-
+    finalizer :shutdown
     #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
     #  when receiving messages from a channel
     #
@@ -46,7 +46,20 @@ module CelluloidPubsub
       parse_options(options)
       raise "#{self}: Please provide an actor in the options list!!!" if @actor.blank?
       raise "#{self}: Please provide an channel in the options list!!!" if @channel.blank?
+      @actor.link Actor.current if @actor.respond_to?(:link)
       @client = Celluloid::WebSocket::Client.new("ws://#{@hostname}:#{@port}#{@path}", Actor.current)
+      Actor.current.link @client
+    end
+
+    # the method will terminate the current actor
+    #
+    #
+    # @return [void]
+    #
+    # @api public
+    def shutdown
+      debug "#{self.class} tries to 'shudown'" if debug_enabled?
+      terminate
     end
 
     # check the options list for values and sets default values if not found
@@ -88,9 +101,8 @@ module CelluloidPubsub
     #
     # @api public
     def subscribe(channel)
-      subscription_data = { 'client_action' => 'subscribe', 'channel' => channel }
-      debug("#{self.class} tries to subscribe  #{subscription_data}") if debug_enabled?
-      async.chat(subscription_data)
+      debug("#{@actor.class} tries to subscribe to channel  #{channel}") if debug_enabled?
+      async.send_action('subscribe', channel)
     end
 
     # checks if the message has the successfull subscription action
@@ -153,7 +165,7 @@ module CelluloidPubsub
     #
     # @api public
     def on_open
-      debug("#{self.class} websocket connection opened") if debug_enabled?
+      debug("#{@actor.class} websocket connection opened") if debug_enabled?
       async.subscribe(@channel)
     end
 
@@ -167,9 +179,9 @@ module CelluloidPubsub
     #
     # @api public
     def on_message(data)
-      debug("#{self.class} received  plain #{data}") if debug_enabled?
+      debug("#{@actor.class} received  plain #{data}") if debug_enabled?
       message = JSON.parse(data)
-      debug("#{self.class} received JSON  #{message}") if debug_enabled?
+      debug("#{@actor.class} received JSON  #{message}") if debug_enabled?
       @actor.async.on_message(message)
     end
 
@@ -185,7 +197,7 @@ module CelluloidPubsub
     def on_close(code, reason)
       @client.terminate
       terminate
-      debug("#{self.class} dispatching on close  #{code} #{reason}") if debug_enabled?
+      debug("#{@actor.class} dispatching on close  #{code} #{reason}") if debug_enabled?
       @actor.async.on_close(code, reason)
     end
 
@@ -204,7 +216,6 @@ module CelluloidPubsub
       publishing_data = { 'client_action' => action }
       publishing_data = publishing_data.merge('channel' => channel) if channel.present?
       publishing_data = publishing_data.merge('data' => data) if data.present?
-      debug(" #{self.class}  sends:  #{publishing_data}") if debug_enabled?
       async.chat(publishing_data)
     end
 
@@ -221,10 +232,10 @@ module CelluloidPubsub
       final_message = nil
       if message.is_a?(Hash)
         final_message = message.to_json
-        debug("#{self.class} sends #{message.to_json}") if debug_enabled?
+        debug("#{@actor.class} sends #{message.to_json}") if debug_enabled?
       else
         final_message = JSON.dump(action: 'message', message: message)
-        debug("#{self.class} sends JSON  #{final_message}") if debug_enabled?
+        debug("#{@actor.class} sends JSON  #{final_message}") if debug_enabled?
       end
       @client.text final_message
     end
