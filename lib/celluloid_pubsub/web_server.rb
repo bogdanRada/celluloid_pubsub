@@ -140,9 +140,8 @@ module CelluloidPubsub
     end
 
     def publish_clasic_event(channel, data)
-      channel_subscribers = Array(@subscribers[channel])
       return if channel.blank? || data.blank?
-      channel_subscribers.each do |hash|
+      (@subscribers[channel] || []).each do |hash|
         hash[:reactor].websocket << data
       end
     end
