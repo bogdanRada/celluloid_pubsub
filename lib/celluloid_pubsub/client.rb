@@ -27,7 +27,7 @@ module CelluloidPubsub
     include Celluloid
     include Celluloid::Logger
     attr_accessor :actor, :client, :options, :hostname, :port, :path, :channel
-
+    finalizer :shutdown
     #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
     #  when receiving messages from a channel
     #
@@ -46,7 +46,20 @@ module CelluloidPubsub
       parse_options(options)
       raise "#{self}: Please provide an actor in the options list!!!" if @actor.blank?
       raise "#{self}: Please provide an channel in the options list!!!" if @channel.blank?
+      @actor.link Actor.current if @actor.respond_to?(:link)
       @client = Celluloid::WebSocket::Client.new("ws://#{@hostname}:#{@port}#{@path}", Actor.current)
+      Actor.current.link @client
+    end
+
+    # the method will terminate the current actor
+    #
+    #
+    # @return [void]
+    #
+    # @api public
+    def shutdown
+      debug "#{self.class} tries to 'shudown'" if debug_enabled?
+      terminate
     end
 
     # check the options list for values and sets default values if not found

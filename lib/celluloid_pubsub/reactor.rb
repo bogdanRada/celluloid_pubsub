@@ -18,7 +18,7 @@ module CelluloidPubsub
     include Celluloid::Logger
 
     attr_accessor :websocket, :server, :channels
-
+    finalizer :shutdown
     #  rececives a new socket connection from the server
     #  and listens for messages
     #
@@ -31,7 +31,7 @@ module CelluloidPubsub
       @server = server
       @channels = []
       @websocket = websocket
-      info "#{self.class} Streaming changes for #{websocket.url}" 
+      info "#{self.class} Streaming changes for #{websocket.url}" if @server.debug_enabled?
       async.run
     end
 
@@ -221,7 +221,7 @@ module CelluloidPubsub
     #
     # @api public
     def shutdown
-      debug "#{self.class} tries to 'shudown'" if @server.debug_enabled?
+      debug "#{self.class} tries to 'shudown'"
       terminate
     end
 
