@@ -157,18 +157,18 @@ module CelluloidPubsub
     def delegate_action(json_data)
       channel = json_data.fetch('channel', nil)
       case json_data['client_action']
-      when 'unsubscribe_all'
-        unsubscribe_all
-      when 'unsubscribe_clients'
-        async.unsubscribe_clients(channel)
-      when 'unsubscribe'
-        async.unsubscribe(channel)
-      when 'subscribe'
-        async.start_subscriber(channel, json_data)
-      when 'publish'
-        @server.publish_event(channel, json_data['data'].to_json)
-      else
-        handle_unknown_action(json_data)
+        when 'unsubscribe_all'
+          unsubscribe_all
+        when 'unsubscribe_clients'
+          async.unsubscribe_clients(channel)
+        when 'unsubscribe'
+          async.unsubscribe(channel)
+        when 'subscribe'
+          async.start_subscriber(channel, json_data)
+        when 'publish'
+          @server.publish_event(channel, json_data['data'].to_json)
+        else
+          handle_unknown_action(json_data)
       end
     end
 
@@ -192,6 +192,7 @@ module CelluloidPubsub
         @channels.delete(channel)
       end
     end
+
     # the method will unsubscribe a client by closing the websocket connection if has unscribed from all channels
     # and deleting the reactor from the channel list on the server
     #
@@ -254,8 +255,8 @@ module CelluloidPubsub
     end
 
     def channel_subscribers(channel)
-       @server.subscribers[channel] || []
-     end
+      @server.subscribers[channel] || []
+    end
 
     # adds the curent actor the list of the subscribers for a particular channel
     # and registers the new channel
