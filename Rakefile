@@ -25,7 +25,7 @@ task default: [:all]
 desc 'Test the plugin under all supported Rails versions.'
 task :all do |_t|
   if ENV['TRAVIS']
-    exec(' bundle exec rubocop . &&  bundle exec rake  spec && bundle exec rake coveralls:push')
+    exec('bundle exec rake  spec && bundle exec rake coveralls:push')
   else
     exec('bundle exec rubocop -a . && bundle exec rake spec')
   end
