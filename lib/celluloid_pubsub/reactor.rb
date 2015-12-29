@@ -18,7 +18,7 @@ module CelluloidPubsub
     include Celluloid::Logger
 
     attr_accessor :websocket, :server, :channels
-
+    finalizer :shutdown
     #  rececives a new socket connection from the server
     #  and listens for messages
     #
@@ -31,7 +31,7 @@ module CelluloidPubsub
       @server = server
       @channels = []
       @websocket = websocket
-      info "Streaming changes for #{websocket.url}" if @server.debug_enabled?
+      info "#{self.class} Streaming changes for #{websocket.url}" if @server.debug_enabled?
       async.run
     end
 
@@ -63,7 +63,7 @@ module CelluloidPubsub
       begin
         message = @websocket.read
       rescue => e
-        debug(e) if @server.debug_enabled?
+        debug(e)
       end
       message
     end
@@ -78,12 +78,12 @@ module CelluloidPubsub
     #
     # @api public
     def parse_json_data(message)
-      debug "Reactor read message  #{message}" if @server.debug_enabled?
+      debug "#{self.class} read message  #{message}" if @server.debug_enabled?
       json_data = nil
       begin
         json_data = JSON.parse(message)
       rescue => e
-        debug "Reactor could not parse #{message} because of #{e.inspect}" if @server.debug_enabled?
+        debug "#{self.class} could not parse #{message} because of #{e.inspect}" if @server.debug_enabled?
         # do nothing
       end
       json_data = message if json_data.nil?
@@ -124,7 +124,7 @@ module CelluloidPubsub
     def handle_parsed_websocket_message(json_data)
       if json_data.is_a?(Hash)
         json_data = json_data.stringify_keys
-        debug "Reactor finds actions for  #{json_data}" if @server.debug_enabled?
+        debug "#{self.class} finds actions for  #{json_data}" if @server.debug_enabled?
         delegate_action(json_data) if json_data['client_action'].present?
       else
         handle_unknown_action(json_data)
@@ -154,18 +154,18 @@ module CelluloidPubsub
     # @api public
     def delegate_action(json_data)
       case json_data['client_action']
-        when 'unsubscribe_all'
-          unsubscribe_all
-        when 'unsubscribe_clients'
-          async.unsubscribe_clients(json_data['channel'])
-        when 'unsubscribe'
-          async.unsubscribe(json_data['channel'])
-        when 'subscribe'
-          async.start_subscriber(json_data['channel'], json_data)
-        when 'publish'
-          @server.publish_event(json_data['channel'], json_data['data'].to_json)
-        else
-          handle_unknown_action(json_data)
+      when 'unsubscribe_all'
+        unsubscribe_all
+      when 'unsubscribe_clients'
+        async.unsubscribe_clients(json_data['channel'])
+      when 'unsubscribe'
+        async.unsubscribe(json_data['channel'])
+      when 'subscribe'
+        async.start_subscriber(json_data['channel'], json_data)
+      when 'publish'
+        @server.publish_event(json_data['channel'], json_data['data'].to_json)
+      else
+        handle_unknown_action(json_data)
       end
     end
 
@@ -191,6 +191,7 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe(channel)
+      debug "#{self.class} runs 'unsubscribe' method with  #{channel}" if @server.debug_enabled?
       return unless channel.present?
       @channels.delete(channel) unless @channels.blank?
       @websocket.close if @channels.blank?
@@ -207,6 +208,7 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe_clients(channel)
+      debug "#{self.class} runs 'unsubscribe_clients' method with  #{channel}" if @server.debug_enabled?
       return if channel.blank? || @server.subscribers[channel].blank?
       unsubscribe_from_channel(channel)
       @server.subscribers[channel] = []
@@ -219,6 +221,7 @@ module CelluloidPubsub
     #
     # @api public
     def shutdown
+      debug "#{self.class} tries to 'shudown'"
       terminate
     end
 
@@ -236,8 +239,8 @@ module CelluloidPubsub
     def start_subscriber(channel, message)
       return unless channel.present?
       add_subscriber_to_channel(channel, message)
-      debug "Subscribed to #{channel} with #{message}" if @server.debug_enabled?
-      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json
+      debug "#{self.class} subscribed to #{channel} with #{message}" if @server.debug_enabled?
+      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json unless @server.redis_enabled?
     end
 
     # adds the curent actor the list of the subscribers for a particular channel
@@ -254,6 +257,7 @@ module CelluloidPubsub
       CelluloidPubsub::Registry.channels << channel unless CelluloidPubsub::Registry.channels.include?(channel)
       @server.subscribers[channel] ||= []
       @server.subscribers[channel] << { reactor: Actor.current, message: message }
+
     end
 
     # unsubscribes all actors from all channels and terminates the curent actor
@@ -262,6 +266,7 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe_all
+      debug "#{self.class} runs 'unsubscribe_all' method" if @server.debug_enabled?
       CelluloidPubsub::Registry.channels.map do |channel|
         unsubscribe_from_channel(channel)
         @server.subscribers[channel] = []
@@ -278,6 +283,8 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe_from_channel(channel)
+      debug "#{self.class} runs 'unsubscribe_from_channel' method with #{channel}" if @server.debug_enabled?
+      return if @server.subscribers[channel].blank?
       @server.subscribers[channel].each do |hash|
         hash[:reactor].websocket.close
         Celluloid::Actor.kill(hash[:reactor])
