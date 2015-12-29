@@ -44,19 +44,28 @@ module CelluloidPubsub
       end
     end
 
+    def action_subscribe?(action)
+      action == 'subscribe'
+    end
+
+    def action_success(action, channel, message)
+      action_subscribe?(action) ? message.merge('client_action' => 'successful_subscription', 'channel' => channel) : nil
+    end
+
     def redis_action(action, channel = nil, message = {})
       fetch_pubsub do |pubsub|
-        log_unsubscriptions(pubsub)
-        callback = fetch_callback_action(action)
-        sucess_message =  action == 'subscribe' ? message.merge('client_action' => 'successful_subscription', 'channel' => channel) : nil
+        callback = prepare_redis_action(action)
+        success_message = action_success(action, channel, message)
         subscription = pubsub.send(action, channel, callback)
-        handle_redis_action(subscription, action, sucess_message)
+        handle_redis_action(subscription, action, success_message)
       end
     end
 
-    def fetch_callback_action(action)
+
+    def prepare_redis_action(action)
+      log_unsubscriptions(pubsub)
       proc do |subscribed_message|
-        action == 'subscribe' ? (@websocket << subscribed_message) : log_debug(message)
+        action_subscribe?(action) ? (@websocket << subscribed_message) : log_debug(message)
       end
     end
 
