@@ -50,8 +50,10 @@ module CelluloidPubsub
     #
     # :nocov:
     def run
-      while Actor.current.alive? && !@websocket.closed? && message = try_read_websocket
-        handle_websocket_message(message)
+      loop do
+        break if !Actor.current.alive? || @websocket.closed? || !@server.alive?
+        message = try_read_websocket
+        handle_websocket_message(message) if message.present?
       end
     end
 
@@ -64,8 +66,8 @@ module CelluloidPubsub
     #
     # :nocov:
     def try_read_websocket
-      @websocket.read
-    rescue => exception
+      @websocket.closed? ? nil : @websocket.read
+    rescue Reel::SocketError
       nil
     end
 
@@ -222,6 +224,7 @@ module CelluloidPubsub
     # @api public
     def shutdown
       debug "#{self.class} tries to 'shudown'"
+      @websocket.close if @websocket.present? && !@websocket.closed?
       terminate
     end
 

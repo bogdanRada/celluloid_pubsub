@@ -36,7 +36,7 @@ module CelluloidPubsub
     end
 
     def filtered_error?(error)
-      [Interrupt, DeadActorError, Celluloid::Task::TerminatedError].any? { |class_name| error.is_a?(class_name) }
+      [Interrupt].any? { |class_name| error.is_a?(class_name) }
     end
 
     #  receives a list of options that are used to configure the webserver

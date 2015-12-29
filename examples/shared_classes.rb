@@ -65,7 +65,7 @@ Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
 signal_received = false
 
 Signal.trap('INT') do
-  puts "\nAn interrupt signal is happening!"
+  puts "\nAn interrupt signal has been triggered!"
   signal_received = true
 end
 
