@@ -58,8 +58,9 @@ module CelluloidPubsub
       @subscribers = {}
       info "CelluloidPubsub::WebServer example starting on #{@hostname}:#{@port}" if debug_enabled?
       super(@hostname, @port, { spy: @spy, backlog: @backlog }, &method(:on_connection))
-      CelluloidPubsub::Redis.connect(use_redis: @use_redis) if redis_enabled? && !CelluloidPubsub::Redis.connected?
     end
+
+
     # :nocov:
 
     #  receives a list of options that are used to configure the webserver
@@ -108,18 +109,16 @@ module CelluloidPubsub
     #
     # @api public
     def publish_event(current_topic, message)
-      return if current_topic.blank? || message.blank? || @subscribers[current_topic].blank?
-      begin
-        if redis_enabled?
-          CelluloidPubsub::Redis.connection.publish(current_topic, message)
-        else
-          @subscribers[current_topic].each do |hash|
-            hash[:reactor].websocket << message
-          end
+      return if current_topic.blank? || message.blank?
+      if redis_enabled?
+        CelluloidPubsub::Redis.connection.publish(current_topic, message)
+      elsif @subscribers[current_topic].present?
+        @subscribers[current_topic].each do |hash|
+          hash[:reactor].websocket << message
         end
-      rescue => e
-        debug("could not publish message #{message} into topic #{current_topic} because of #{e.inspect}") if debug_enabled?
       end
+    rescue => e
+      debug("could not publish message #{message} into topic #{current_topic} because of #{e.inspect}") if debug_enabled?
     end
 
     #  callback that will execute when receiving new conections

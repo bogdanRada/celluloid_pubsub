@@ -19,13 +19,13 @@ class Subscriber
   include Celluloid::Logger
 
   def initialize(options = {})
-    @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel' }.merge(options))
+    @client = CelluloidPubsub::Client.new({ actor: Actor.current, channel: 'test_channel' }.merge(options))
   end
 
   def on_message(message)
     if @client.succesfull_subscription?(message)
       puts "subscriber got successful subscription #{message.inspect}"
-      @client.publish('test_channel2', 'data' => ' subscriber got successfull subscription') # the message needs to be a Hash
+    #  @client.publish('test_channel2', 'data' => ' subscriber got successfull subscription') # the message needs to be a Hash
     else
       puts "subscriber got message #{message.inspect}"
       @client.unsubscribe('test_channel')
@@ -44,13 +44,13 @@ class Publisher
   include Celluloid::Logger
 
   def initialize(options = {})
-    @client = CelluloidPubsub::Client.connect({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
-    @client.publish('test_channel', 'data' => 'my_message') # the message needs to be a Hash
+    @client = CelluloidPubsub::Client.new({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
   end
 
   def on_message(message)
     puts " publisher got #{message.inspect}"
-    @client.unsubscribe('test_channel2')
+    @client.publish('test_channel', 'data' => 'my_message') # the message needs to be a Hash
+    #@client.unsubscribe('test_channel2')
   end
 
   def on_close(code, reason)

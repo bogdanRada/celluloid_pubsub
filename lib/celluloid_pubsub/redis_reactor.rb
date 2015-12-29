@@ -1,53 +1,73 @@
 require_relative './reactor'
 module CelluloidPubsub
   class RedisReactor < CelluloidPubsub::Reactor
+    include Celluloid
+    include Celluloid::IO
+    include Celluloid::Logger
+
     def unsubscribe(channel)
-      CelluloidPubsub::Redis.connection.unsubscribe(channel)
+      redis_unsubscribe_channel(channel)
       super
     end
 
     def add_subscriber_to_channel(channel, message)
       super
-      CelluloidPubsub::Redis.connect if @server.redis_enabled? && !CelluloidPubsub::Redis.connected?
-      CelluloidPubsub::Redis.connection.subscribe(channel) do |on|
-        on.subscribe do |subscribed_channel, subscriptions|
-          @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => subscribed_channel, 'subscriptions' => subscriptions).to_json
-        end
-
-        on.unsubscribe do |subscribed_channel, subscriptions|
-          debug "Unsubscribed from ##{subscribed_channel} (#{subscriptions} subscriptions)" if @server.debug_enabled?
-          unsubscribe_from_channel(channel)
-          terminate
-        end
-
-        on.message do |_subscribed_channel, _subscribed_message|
-          shutdown if message == 'exit'
-
-          @websocket << event.to_json
-        end
-      end
-    rescue Reel::SocketError
-      info 'Client disconnected'
-      terminate
+      redis_subscribe(channel, message)
     end
 
     def unsubscribe_from_channel(channel)
-      CelluloidPubsub::Redis.connection.unsubscribe(channel)
+      redis_unsubscribe_channel(channel)
       super
     end
 
     def shutdown
-      CelluloidPubsub::Redis.connection.unsubscribe
+      check_redis_connection do |connection|
+        connection.unsubscribe
+      end
       super
     end
 
     def unsubscribe_all
       CelluloidPubsub::Registry.channels.map do |channel|
-        CelluloidPubsub::Redis.connection.unsubscribe(channel)
+        redis_unsubscribe_channel(channel)
       end
-
       info 'clearing connections'
       shutdown
     end
+
+
+    def redis_unsubscribe_channel(channel)
+      check_redis_connection do |connection|
+        pubsub = connection.pubsub
+        pubsub.unsubscribe(channel)
+      end
+    end
+
+
+    def check_redis_connection(&block)
+      if @server.redis_enabled? && !CelluloidPubsub::Redis.connected?
+        CelluloidPubsub::Redis.connect(use_redis: @server.redis_enabled?, &block)
+      end
+    end
+
+    def redis_subscribe(channel, message)
+      check_redis_connection do |connection|
+        pubsub = connection.pubsub
+
+        subscription = pubsub.subscribe(channel) {|subscribed_message|
+          @websocket << subscribed_message.to_json
+        }
+        subscription.callback { |reply|
+          @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel, 'subscriptions' => reply).to_json
+        }
+        pubsub.on(:unsubscribe) { |channel, remaining_subscriptions|
+          debug "Unsubscribed from ##{subscribed_channel} (#{subscriptions} subscriptions)" if @server.debug_enabled?
+          unsubscribe_from_channel(channel)
+          terminate
+        }
+      end
+    end
+
+
   end
 end

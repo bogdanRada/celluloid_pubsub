@@ -254,6 +254,7 @@ module CelluloidPubsub
       CelluloidPubsub::Registry.channels << channel unless CelluloidPubsub::Registry.channels.include?(channel)
       @server.subscribers[channel] ||= []
       @server.subscribers[channel] << { reactor: Actor.current, message: message }
+
     end
 
     # unsubscribes all actors from all channels and terminates the curent actor
@@ -278,6 +279,7 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe_from_channel(channel)
+      return if @server.subscribers[channel].blank?
       @server.subscribers[channel].each do |hash|
         hash[:reactor].websocket.close
         Celluloid::Actor.kill(hash[:reactor])

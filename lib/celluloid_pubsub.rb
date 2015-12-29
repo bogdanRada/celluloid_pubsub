@@ -3,4 +3,8 @@ require 'celluloid/io'
 require 'reel'
 require 'celluloid/websocket/client'
 require 'active_support/all'
+require 'json'
+require 'eventmachine'
+require 'em-hiredis'
+require 'redis'
 Gem.find_files('celluloid_pubsub/**/*.rb').each { |path| require path }
