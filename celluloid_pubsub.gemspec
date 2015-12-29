@@ -16,15 +16,16 @@ Gem::Specification.new do |s|
   s.test_files = s.files.grep(/^(spec)/)
   s.require_paths = ['lib']
 
-  s.add_runtime_dependency 'celluloid', '~> 0.16', '~> 0.16.0'
+  s.add_runtime_dependency 'celluloid', '~> 0.16', '~> 0.16.0' # TODO: upgrade to version 0.17 - work in progress
   s.add_runtime_dependency 'celluloid-io', '~> 0.16', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '~> 0.5', '>= 0.5.0'
-  s.add_runtime_dependency 'http', '~> 0.9.8', '>= 0.9.8' # TODO: remove this once fixed in reel gem
-  s.add_runtime_dependency 'celluloid-websocket-client', '0.0.1'
+  s.add_runtime_dependency 'http', '~> 0.9.8', '>= 0.9.8' # TODO: remove this once fixed in reel gem ( waiting for version 0.6.0 of reel to be stable)
+  s.add_runtime_dependency 'celluloid-websocket-client', '~> 0.0', '>= 0.0.1'
   s.add_runtime_dependency 'activesupport', '~> 4.1', '>= 4.1.0'
-  s.add_runtime_dependency 'celluloid-redis', '~>0.0', '>= 0.0.2'
+  s.add_runtime_dependency 'em-hiredis', '~>0.0', '>= 0.0.2'
   s.add_runtime_dependency 'json', '~> 1.8', '>= 1.8.3'
   s.add_runtime_dependency 'redis', '~>3.2', '>= 3.2.2'
+
 
   s.add_development_dependency 'rspec-rails', '~> 3.3', '>= 3.3'
   s.add_development_dependency 'guard', '~> 2.13', '>= 2.13'
