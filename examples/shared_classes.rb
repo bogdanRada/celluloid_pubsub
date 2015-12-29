@@ -3,6 +3,7 @@ require 'celluloid_pubsub'
 require 'logger'
 
 debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
+use_redis = ENV['USE_REDIS'].present? && ENV['USE_REDIS'].to_s == 'true'
 log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
 
 
@@ -58,7 +59,7 @@ class Publisher
 end
 
 
-CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled, use_redis: $use_redis,log_file_path: log_file_path )
+CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled, use_redis: use_redis,log_file_path: log_file_path )
 Subscriber.supervise_as(:subscriber, enable_debug: debug_enabled)
 Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
 signal_received = false

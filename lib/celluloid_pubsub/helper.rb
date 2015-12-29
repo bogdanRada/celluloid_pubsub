@@ -12,12 +12,16 @@ module CelluloidPubsub
       message.is_a?(Hash) && message['client_action'] == 'successful_subscription'
     end
 
-    module_function
+  module_function
 
-    def setup_celluloid_exception_handling
-      return unless debug_enabled?
+    def setup_celluloid_logger
+      return if !debug_enabled? || (respond_to?(:log_file_path) && log_file_path.blank?)
       setup_log_file
       Celluloid.logger = ::Logger.new(log_file_path.present? ? log_file_path : STDOUT)
+      setup_celluloid_exception_handler
+    end
+
+    def setup_celluloid_exception_handler
       Celluloid.task_class = Celluloid::TaskThread
       Celluloid.exception_handler do |ex|
         puts ex unless filtered_error?(ex)
@@ -25,15 +29,16 @@ module CelluloidPubsub
     end
 
     def setup_log_file
-      return if log_file_path.blank?
+      return if !debug_enabled? || (respond_to?(:log_file_path) && log_file_path.blank?)
       FileUtils.mkdir_p(File.dirname(log_file_path)) unless File.directory?(log_file_path)
       log_file = File.open(log_file_path, 'w')
       log_file.sync = true
     end
 
     def filtered_error?(error)
-      [Interrupt, DeadActorError, Celluloid::Task::TerminatedError].any?{|class_name| error.is_a?(class_name) }
+      [Interrupt, DeadActorError, Celluloid::Task::TerminatedError].any? { |class_name| error.is_a?(class_name) }
     end
+
     #  receives a list of options that are used to configure the webserver
     #
     # @param  [Hash]  options the options that can be used to connect to webser and send additional data
@@ -53,7 +58,7 @@ module CelluloidPubsub
     end
 
     def log_debug(message)
-      debug message if debug_enabled?
+      debug message if respond_to?(:debug_enabled?) && debug_enabled?
     end
   end
 end
