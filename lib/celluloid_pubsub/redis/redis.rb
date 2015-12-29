@@ -1,8 +1,10 @@
+require_relative '../helper'
 module CelluloidPubsub
   # class that handles redis connection
   class Redis
     class << self
       include Celluloid::Logger
+      include CelluloidPubsub::Helper
 
       @connected ||= false
       attr_accessor :connected, :connection
@@ -28,7 +30,7 @@ module CelluloidPubsub
 
       def setup_em_exception_handler
         EM.error_handler do |error|
-          debug error
+          debug error unless filtered_error?(error)
         end
       end
     end

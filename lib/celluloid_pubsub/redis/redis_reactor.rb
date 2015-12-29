@@ -36,35 +36,45 @@ module CelluloidPubsub
       super
     end
 
-    private
+  private
+
+    def fetch_pubsub
+      CelluloidPubsub::Redis.connect do |connection|
+        yield connection.pubsub
+      end
+    end
 
     def redis_action(action, channel = nil, message = {})
-      CelluloidPubsub::Redis.connect do |connection|
-        pubsub = connection.pubsub
-        handle_on_subsubscribe_log(pubsub)
-        handle_redis_action(pubsub, action, channel, message)
+      fetch_pubsub do |pubsub|
+        log_unsubscriptions(pubsub)
+        callback = fetch_callback_action(action)
+        sucess_message =  action == 'subscribe' ? message.merge('client_action' => 'successful_subscription', 'channel' => channel) : nil
+        subscription = pubsub.send(action, channel, callback)
+        handle_redis_action(subscription, action, sucess_message)
       end
     end
 
-    def handle_on_subsubscribe_log(pubsub)
-      pubsub.on(:unsubscribe) do |subscribed_channel, remaining_subscriptions|
-        debug [:unsubscribe_happened, subscribed_channel, remaining_subscriptions].inspect if debug_enabled?
-      end
-    end
-
-    def handle_redis_action(pubsub, action, channel, message)
-      callback = proc{ |subscribed_message|
+    def fetch_callback_action(action)
+      proc do |subscribed_message|
         action == 'subscribe' ? (@websocket << subscribed_message) : log_debug(message)
-      }
-      subscription = pubsub.send(action, channel, callback)
-      register_redis_callback(subscription,action,channel, message)
+      end
+    end
+
+    def log_unsubscriptions(pubsub)
+      pubsub.on(:unsubscribe) do |subscribed_channel, remaining_subscriptions|
+        log_debug [:unsubscribe_happened, subscribed_channel, remaining_subscriptions].inspect
+      end
+    end
+
+    def handle_redis_action(subscription, action, sucess_message = nil)
+      register_redis_callback(subscription, sucess_message)
       register_redis_error_callback(subscription, action)
     end
 
-    def register_redis_callback(subscription, action, channel, message)
+    def register_redis_callback(subscription, sucess_message = nil)
       subscription.callback do |subscriptions_ids|
-        if action == 'subscribe'
-          @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel, 'subscriptions' => subscriptions_ids).to_json
+        if sucess_message.present?
+          @websocket << sucess_message.merge('subscriptions' => subscriptions_ids).to_json
         else
           log_debug "#{action} success #{success_response.inspect}"
         end
@@ -74,6 +84,5 @@ module CelluloidPubsub
     def register_redis_error_callback(subscription, action)
       subscription.errback { |reply| log_debug "#{action} error #{reply.inspect}" }
     end
-
   end
 end
