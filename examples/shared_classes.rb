@@ -23,7 +23,6 @@ end
 class Subscriber
   include Celluloid
   include Celluloid::Logger
-  finalizer :shutdown
 
   def initialize(options = {})
     @client = CelluloidPubsub::Client.new({ actor: Actor.current, channel: 'test_channel' }.merge(options))
@@ -35,7 +34,6 @@ class Subscriber
       @client.publish('test_channel2', 'data' => ' subscriber got successfull subscription') # the message needs to be a Hash
     else
       puts "subscriber got message #{message.inspect}"
-      @client.unsubscribe('test_channel')
     end
   end
 
@@ -43,36 +41,33 @@ class Subscriber
     puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
   end
-  def shutdown
-    debug "#{self.class} tries to 'shudown'"
-    terminate
-  end
+
+
 end
 
 # actor that publishes a message in a channel
 class Publisher
   include Celluloid
   include Celluloid::Logger
-  finalizer :shutdown
 
   def initialize(options = {})
     @client = CelluloidPubsub::Client.new({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
   end
 
   def on_message(message)
-    puts " publisher got #{message.inspect}"
-    @client.publish('test_channel', 'data' => 'my_message') # the message needs to be a Hash
-    @client.unsubscribe('test_channel2')
+    if @client.succesfull_subscription?(message)
+      puts "publisher got successful subscription #{message.inspect}"
+      @client.publish('test_channel', 'data' => ' my_message') # the message needs to be a Hash
+    else
+      puts "publisher got message #{message.inspect}"
+    end
   end
 
   def on_close(code, reason)
     puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
   end
-  def shutdown
-    debug "#{self.class} tries to 'shudown'"
-    terminate
-  end
+
 end
 
 CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled, use_redis: $use_redis)

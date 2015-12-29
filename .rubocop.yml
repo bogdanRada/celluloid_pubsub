@@ -4,7 +4,11 @@ AllCops:
     - bin/**/*
     - Guardfile
     - vendor/**/*
+    - examples/**/*
 
+ClassLength:
+  Max: 500
+  
 Documentation:
   Enabled: true
 
