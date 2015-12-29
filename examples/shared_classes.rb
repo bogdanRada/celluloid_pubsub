@@ -50,7 +50,7 @@ class Publisher
   def on_message(message)
     puts " publisher got #{message.inspect}"
     @client.publish('test_channel', 'data' => 'my_message') # the message needs to be a Hash
-    #@client.unsubscribe('test_channel2')
+    @client.unsubscribe('test_channel2')
   end
 
   def on_close(code, reason)
