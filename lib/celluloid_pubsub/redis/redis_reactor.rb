@@ -61,7 +61,6 @@ module CelluloidPubsub
       end
     end
 
-
     def prepare_redis_action(action)
       log_unsubscriptions(pubsub)
       proc do |subscribed_message|
