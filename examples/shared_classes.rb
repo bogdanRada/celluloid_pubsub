@@ -2,21 +2,28 @@ require 'bundler/setup'
 require 'celluloid_pubsub'
 require 'logger'
 
-$debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
+debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
 
-if $debug_enabled == true
+if debug_enabled == true
   log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
   puts log_file_path
   FileUtils.mkdir_p(File.dirname(log_file_path))
   log_file = File.open(log_file_path, 'w')
   log_file.sync = true
   Celluloid.logger = ::Logger.new(log_file_path)
+  Celluloid.task_class = Celluloid::TaskThread
+  Celluloid.exception_handler do |ex|
+    unless ex.is_a?(Interrupt)
+      puts ex
+    end
+  end
 end
 
 # actor that subscribes to a channel
 class Subscriber
   include Celluloid
   include Celluloid::Logger
+  finalizer :shutdown
 
   def initialize(options = {})
     @client = CelluloidPubsub::Client.new({ actor: Actor.current, channel: 'test_channel' }.merge(options))
@@ -36,12 +43,17 @@ class Subscriber
     puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
   end
+  def shutdown
+    debug "#{self.class} tries to 'shudown'"
+    terminate
+  end
 end
 
 # actor that publishes a message in a channel
 class Publisher
   include Celluloid
   include Celluloid::Logger
+  finalizer :shutdown
 
   def initialize(options = {})
     @client = CelluloidPubsub::Client.new({ actor: Actor.current, channel: 'test_channel2' }.merge(options))
@@ -57,4 +69,24 @@ class Publisher
     puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
   end
+  def shutdown
+    debug "#{self.class} tries to 'shudown'"
+    terminate
+  end
 end
+
+CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled, use_redis: $use_redis)
+Subscriber.supervise_as(:subscriber, enable_debug: debug_enabled)
+Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
+signal_received = false
+
+at_exit do
+  Celluloid.shutdown
+end
+Signal.trap('INT') do
+  puts "\nAn interrupt signal is happening!"
+  signal_received = true
+end
+
+sleep 0.1 until signal_received
+puts 'Exited succesfully! =)'

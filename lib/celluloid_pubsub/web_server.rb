@@ -39,7 +39,7 @@ module CelluloidPubsub
     PATH = '/ws'
 
     attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy, :use_redis, :debug_enabled
-
+    finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
     # @param  [Hash]  options the options that can be used to connect to webser and send additional data
@@ -59,6 +59,17 @@ module CelluloidPubsub
       @subscribers = {}
       info "CelluloidPubsub::WebServer example starting on #{@hostname}:#{@port}" if debug_enabled?
       super(@hostname, @port, { spy: @spy, backlog: @backlog }, &method(:on_connection))
+    end
+
+    # the method will terminate the current actor
+    #
+    #
+    # @return [void]
+    #
+    # @api public
+    def shutdown
+      debug "#{self.class} tries to 'shudown'"
+      terminate
     end
 
     # :nocov:
@@ -209,5 +220,6 @@ module CelluloidPubsub
         reactor.websocket << data.to_json
       end
     end
+
   end
 end
