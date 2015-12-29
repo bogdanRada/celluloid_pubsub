@@ -38,21 +38,14 @@ module CelluloidPubsub
     private
 
     def redis_unsubscribe_channel(channel)
-      check_redis_connection do |connection|
+      CelluloidPubsub::Redis.connect do |connection|
         pubsub = connection.pubsub
         pubsub.unsubscribe(channel)
       end
     end
 
-
-    def check_redis_connection(&block)
-      if @server.redis_enabled?
-        CelluloidPubsub::Redis.connect(&block)
-      end
-    end
-
     def redis_subscribe(channel, message)
-      check_redis_connection do |connection|
+      CelluloidPubsub::Redis.connect do |connection|
         pubsub = connection.pubsub
 
         subscription = pubsub.subscribe(channel) {|subscribed_message|
@@ -68,7 +61,6 @@ module CelluloidPubsub
         }
       end
     end
-
 
   end
 end
