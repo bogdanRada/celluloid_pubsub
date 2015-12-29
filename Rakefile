@@ -27,10 +27,10 @@ task :all do |_t|
   if ENV['TRAVIS']
     exec(' bundle exec rubocop . &&  bundle exec rake  spec && bundle exec rake coveralls:push')
   else
-    exec('bundle exec rubocop -a .  && bundle exec reek . && bundle exec rake spec')
+    exec('bundle exec rubocop -a . && bundle exec rake spec')
   end
 end
 
 task :docs do
-  exec(' bundle exec rubocop -a .  && bundle exec reek . && bundle exec inch --pedantic && bundle exec yard')
+  exec(' bundle exec rubocop -a . && bundle exec inch --pedantic && bundle exec yard')
 end

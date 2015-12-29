@@ -32,7 +32,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'coveralls', '~> 0.7', '>= 0.7'
 
   s.add_development_dependency 'rubocop', '~> 0.33', '>= 0.33'
-  s.add_development_dependency 'reek', '~> 3.8', '>= 3.8.1'
   s.add_development_dependency 'yard', '~> 0.8', '>= 0.8.7'
   s.add_development_dependency 'yard-rspec', '~> 0.1', '>= 0.1'
   s.add_development_dependency 'redcarpet', '~> 3.3', '>= 3.3'
