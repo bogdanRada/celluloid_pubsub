@@ -58,7 +58,7 @@ class Publisher
 end
 
 
-CelluloidPubsub::WebServer.supervise_as(:web_server, server_config, enable_debug: debug_enabled, use_redis: $use_redis,log_file_path: log_file_path )
+CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled, use_redis: $use_redis,log_file_path: log_file_path )
 Subscriber.supervise_as(:subscriber, enable_debug: debug_enabled)
 Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
 signal_received = false
