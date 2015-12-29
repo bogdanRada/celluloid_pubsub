@@ -185,7 +185,7 @@ module CelluloidPubsub
       @server.async.handle_dispatched_message(Actor.current, json_data)
     end
 
-    def forget_channel
+    def forget_channel(channel)
       if @channels.blank?
         @websocket.close
       else
@@ -204,7 +204,7 @@ module CelluloidPubsub
     def unsubscribe(channel)
       log_debug "#{self.class} runs 'unsubscribe' method with  #{channel}"
       return unless channel.present?
-      forget_channel
+      forget_channel(channel)
       (@server.subscribers[channel] || []).delete_if do |hash|
         hash[:reactor] == Actor.current
       end
