@@ -25,7 +25,7 @@ class Subscriber
   def on_message(message)
     if @client.succesfull_subscription?(message)
       puts "subscriber got successful subscription #{message.inspect}"
-    #  @client.publish('test_channel2', 'data' => ' subscriber got successfull subscription') # the message needs to be a Hash
+      @client.publish('test_channel2', 'data' => ' subscriber got successfull subscription') # the message needs to be a Hash
     else
       puts "subscriber got message #{message.inspect}"
       @client.unsubscribe('test_channel')

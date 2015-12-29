@@ -6,17 +6,17 @@ module CelluloidPubsub
     include Celluloid::Logger
 
     def unsubscribe(channel)
-      redis_unsubscribe_channel(channel)
+      async.redis_unsubscribe_channel(channel)
       super
     end
 
     def add_subscriber_to_channel(channel, message)
       super
-      redis_subscribe(channel, message)
+      async.redis_subscribe(channel, message)
     end
 
     def unsubscribe_from_channel(channel)
-      redis_unsubscribe_channel(channel)
+      async.redis_unsubscribe_channel(channel)
       super
     end
 
@@ -29,12 +29,13 @@ module CelluloidPubsub
 
     def unsubscribe_all
       CelluloidPubsub::Registry.channels.map do |channel|
-        redis_unsubscribe_channel(channel)
+        async.redis_unsubscribe_channel(channel)
       end
       info 'clearing connections'
       shutdown
     end
 
+    private
 
     def redis_unsubscribe_channel(channel)
       check_redis_connection do |connection|
@@ -45,8 +46,8 @@ module CelluloidPubsub
 
 
     def check_redis_connection(&block)
-      if @server.redis_enabled? && !CelluloidPubsub::Redis.connected?
-        CelluloidPubsub::Redis.connect(use_redis: @server.redis_enabled?, &block)
+      if @server.redis_enabled?
+        CelluloidPubsub::Redis.connect(&block)
       end
     end
 
@@ -55,7 +56,7 @@ module CelluloidPubsub
         pubsub = connection.pubsub
 
         subscription = pubsub.subscribe(channel) {|subscribed_message|
-          @websocket << subscribed_message.to_json
+          @websocket << subscribed_message
         }
         subscription.callback { |reply|
           @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel, 'subscriptions' => reply).to_json
