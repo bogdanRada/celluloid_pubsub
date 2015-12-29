@@ -38,7 +38,7 @@ module CelluloidPubsub
     # The request path that the webserver accepts by default
     PATH = '/ws'
 
-    attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy, :use_redis
+    attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy, :use_redis, :debug_enabled
 
     #  receives a list of options that are used to configure the webserver
     #
@@ -59,7 +59,6 @@ module CelluloidPubsub
       info "CelluloidPubsub::WebServer example starting on #{@hostname}:#{@port}" if debug_enabled?
       super(@hostname, @port, { spy: @spy, backlog: @backlog }, &method(:on_connection))
     end
-
 
     # :nocov:
 
@@ -85,6 +84,7 @@ module CelluloidPubsub
       @path = @options.fetch('path', CelluloidPubsub::WebServer::PATH)
       @spy = @options.fetch('spy', false)
       @use_redis = @options.fetch('use_redis', false)
+      @debug_enabled = @options.fetch('enable_debug', false)
     end
 
     #  checks if debug is enabled
@@ -93,7 +93,7 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @options.fetch('enable_debug', false).to_s == 'true'
+      @debug_enabled.to_s == 'true'
     end
 
     def redis_enabled?
