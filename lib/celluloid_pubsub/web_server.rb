@@ -56,12 +56,16 @@ module CelluloidPubsub
     #
     # :nocov:
     def initialize(options = {})
+      Celluloid.boot unless Celluloid.running?
       @options = parse_options(options)
-      log_debug @options
       @subscribers = {}
+      setup_celluloid_exception_handling
       log_debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
+
+
+
 
     def use_redis
       @use_redis ||= @options.fetch('use_redis', false)
@@ -81,6 +85,10 @@ module CelluloidPubsub
     def shutdown
       debug "#{self.class} tries to 'shudown'"
       terminate
+    end
+
+    def log_file_path
+      @log_file_path ||= @options.fetch('log_file_path', nil)
     end
 
     def hostname

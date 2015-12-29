@@ -12,8 +12,28 @@ module CelluloidPubsub
       message.is_a?(Hash) && message['client_action'] == 'successful_subscription'
     end
 
-  module_function
+    module_function
 
+    def setup_celluloid_exception_handling
+      return unless debug_enabled?
+      setup_log_file
+      Celluloid.logger = ::Logger.new(log_file_path.present? ? log_file_path : STDOUT)
+      Celluloid.task_class = Celluloid::TaskThread
+      Celluloid.exception_handler do |ex|
+        puts ex unless filtered_error?(ex)
+      end
+    end
+
+    def setup_log_file
+      return if log_file_path.blank?
+      FileUtils.mkdir_p(File.dirname(log_file_path)) unless File.directory?(log_file_path)
+      log_file = File.open(log_file_path, 'w')
+      log_file.sync = true
+    end
+
+    def filtered_error?(error)
+      [Interrupt, DeadActorError, Celluloid::Task::TerminatedError].any?{|class_name| error.is_a?(class_name) }
+    end
     #  receives a list of options that are used to configure the webserver
     #
     # @param  [Hash]  options the options that can be used to connect to webser and send additional data
@@ -28,8 +48,8 @@ module CelluloidPubsub
     # @api public
     def parse_options(options)
       options = options.is_a?(Array) ? options.first : options
-      options = options.is_a?(Hash) ? options : {}
-      options.stringify_keys
+      options = options.is_a?(Hash) ? options.stringify_keys : {}
+      options
     end
 
     def log_debug(message)

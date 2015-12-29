@@ -40,7 +40,6 @@ module CelluloidPubsub
       @server.debug_enabled?
     end
 
-
     # reads from the socket the message
     # and dispatches it to the handle_websocket_message method
     # @see #handle_websocket_message
@@ -65,10 +64,9 @@ module CelluloidPubsub
     #
     # :nocov:
     def try_read_websocket
-       @websocket.read
+      @websocket.read
     rescue => exception
-      debug(exception)
-     nil
+      nil
     end
 
     def reactor_class

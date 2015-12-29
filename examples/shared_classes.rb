@@ -3,21 +3,8 @@ require 'celluloid_pubsub'
 require 'logger'
 
 debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
+log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
 
-if debug_enabled == true
-  log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
-  puts log_file_path
-  FileUtils.mkdir_p(File.dirname(log_file_path))
-  log_file = File.open(log_file_path, 'w')
-  log_file.sync = true
-  Celluloid.logger = ::Logger.new(log_file_path)
-  Celluloid.task_class = Celluloid::TaskThread
-  Celluloid.exception_handler do |ex|
-    unless ex.is_a?(Interrupt)
-      puts ex
-    end
-  end
-end
 
 # actor that subscribes to a channel
 class Subscriber
@@ -70,14 +57,12 @@ class Publisher
 
 end
 
-CelluloidPubsub::WebServer.supervise_as(:web_server, enable_debug: debug_enabled, use_redis: $use_redis)
+
+CelluloidPubsub::WebServer.supervise_as(:web_server, server_config, enable_debug: debug_enabled, use_redis: $use_redis,log_file_path: log_file_path )
 Subscriber.supervise_as(:subscriber, enable_debug: debug_enabled)
 Publisher.supervise_as(:publisher, enable_debug: debug_enabled)
 signal_received = false
 
-at_exit do
-  Celluloid.shutdown
-end
 Signal.trap('INT') do
   puts "\nAn interrupt signal is happening!"
   signal_received = true
