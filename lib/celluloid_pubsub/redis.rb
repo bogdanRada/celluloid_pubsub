@@ -13,6 +13,9 @@ module CelluloidPubsub
         options.stringify_keys! if options.present?
         if options['use_redis'].to_s.downcase == 'true'
           @connected = true
+          require 'eventmachine'
+          require 'em-hiredis'
+          require 'redis'
           EM.run do
             @connection = EM::Hiredis.connect
             yield @connection if block_given?
