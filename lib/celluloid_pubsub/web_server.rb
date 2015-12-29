@@ -54,6 +54,7 @@ module CelluloidPubsub
     #
     # :nocov:
     def initialize(options = {})
+      options = options.is_a?(Array) ? options.first : options
       parse_options(options)
       @subscribers = {}
       info "CelluloidPubsub::WebServer example starting on #{@hostname}:#{@port}" if debug_enabled?
@@ -75,7 +76,7 @@ module CelluloidPubsub
     #
     # @api public
     def parse_options(options)
-      raise 'Options is not a hash ' unless options.is_a?(Hash)
+      options = options.is_a?(Hash) ? options : {}
       @options = options.stringify_keys
       debug @options if debug_enabled?
       @backlog = @options.fetch('backlog', 1024)
@@ -137,7 +138,7 @@ module CelluloidPubsub
     def on_connection(connection)
       while request = connection.request
         if request.websocket?
-          info 'Received a WebSocket connection' if debug_enabled?
+          info "#{self.class} Received a WebSocket connection" if debug_enabled?
 
           # We're going to hand off this connection to another actor (Writer/Reader)
           # However, initially Reel::Connections are "attached" to the
@@ -180,8 +181,8 @@ module CelluloidPubsub
     # @api public
     def route_websocket(socket)
       if socket.url == @path
-        info 'Reactor handles new socket connection' if debug_enabled?
         reactor = redis_enabled? ? CelluloidPubsub::RedisReactor.new : CelluloidPubsub::Reactor.new
+        info "#{reactor.class} handles new socket connection" if debug_enabled?
         Actor.current.link reactor
         reactor.async.work(socket, Actor.current)
       else
@@ -200,7 +201,7 @@ module CelluloidPubsub
     #
     # @api public
     def handle_dispatched_message(reactor, data)
-      debug "Webserver trying to dispatch message  #{data.inspect}" if debug_enabled?
+      debug "#{self.class} trying to dispatch message  #{data.inspect}" if debug_enabled?
       message = reactor.parse_json_data(data)
       if message.present? && message.is_a?(Hash)
         reactor.websocket << message.to_json
