@@ -52,13 +52,13 @@ module CelluloidPubsub
       raise "#{self}: Please provide an actor in the options list!!!" if @actor.blank?
       raise "#{self}: Please provide an channel in the options list!!!" if @channel.blank?
       supervise_actors
-      setup_celluloid_exception_handling
+      setup_celluloid_logger
     end
 
     def log_file_path
       @log_file_path ||= @options.fetch('log_file_path', nil)
     end
-    
+
     # the method will link the current actor to the actor that is attached to, and the connection to the current actor
     #
     # @return [void]

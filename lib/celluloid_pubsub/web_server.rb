@@ -59,13 +59,10 @@ module CelluloidPubsub
       Celluloid.boot unless Celluloid.running?
       @options = parse_options(options)
       @subscribers = {}
-      setup_celluloid_exception_handling
+      setup_celluloid_logger
       log_debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
-
-
-
 
     def use_redis
       @use_redis ||= @options.fetch('use_redis', false)
