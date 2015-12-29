@@ -15,6 +15,9 @@ describe CelluloidPubsub::Reactor do
     server.stubs(:redis_enabled?).returns(false)
     websocket.stubs(:read)
     websocket.stubs(:url)
+    websocket.stubs(:close)
+    websocket.stubs(:closed?).returns(false)
+    server.stubs(:alive?).returns(true)
     subject.stubs(:inspect).returns(subject)
     subject.stubs(:run)
     subject.work(websocket, server)
@@ -137,14 +140,14 @@ describe CelluloidPubsub::Reactor do
       subject.channels.stubs(:blank?).returns(false)
       subject.channels.expects(:delete).with(channel)
       act = subject.unsubscribe(channel)
-      expect(act).to eq(nil)
+      expect(act).to eq([])
     end
 
     it 'unsubscribes' do
       subject.channels.stubs(:blank?).returns(true)
       subject.websocket.expects(:close)
       act = subject.unsubscribe(channel)
-      expect(act).to eq(nil)
+      expect(act).to eq([])
     end
 
     it 'unsubscribes' do
@@ -174,6 +177,7 @@ describe CelluloidPubsub::Reactor do
 
     it 'subscribes ' do
       subject.stubs(:add_subscriber_to_channel).with(channel, message)
+      server.stubs(:redis_enabled?).returns(false)
       subject.websocket.expects(:<<).with(message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json)
       subject.start_subscriber(channel, message)
     end
@@ -192,12 +196,13 @@ describe CelluloidPubsub::Reactor do
   describe '#add_subscriber_to_channel' do
     let(:channel) { 'some channel' }
     let(:message) { { a: 'b' } }
+    let(:subscribers) {mock}
 
     it 'adds subscribed' do
       CelluloidPubsub::Registry.channels.stubs(:include?).with(channel).returns(false)
       CelluloidPubsub::Registry.channels.expects(:<<).with(channel)
-      server.subscribers[channel] = []
-      server.subscribers[channel].expects(:<<).with(reactor: subject, message: message)
+      subject.expects(:channel_subscribers).with(channel).returns(subscribers)
+      subscribers.expects(:push).with(reactor: subject, message: message)
       subject.add_subscriber_to_channel(channel, message)
       expect(subject.channels).to include(channel)
     end
