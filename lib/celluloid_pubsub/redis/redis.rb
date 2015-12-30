@@ -22,7 +22,7 @@ module CelluloidPubsub
 
       def run_the_eventmachine(&block)
         EM.run do
-          @connection = EM::Hiredis.connect
+          @connection ||= EM::Hiredis.connect
           @connected = true
           block.call @connection
         end
