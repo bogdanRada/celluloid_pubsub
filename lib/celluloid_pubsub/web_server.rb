@@ -13,22 +13,6 @@ module CelluloidPubsub
   #
   # @!attribute subscribers
   #   @return [Hash] The hostname on which the webserver runs on
-  #
-  # @!attribute backlog
-  #   @return [Integer] Determines how many connections can be used
-  #   Defaults to 1024
-  #
-  # @!attribute hostname
-  #   @return [String] The hostname on which the webserver runs on
-  #
-  # @!attribute port
-  #  @return [String] The port on which the webserver runs on
-  #
-  # @!attribute path
-  #   @return [String] The hostname on which the webserver runs on
-  #
-  # @!attribute spy
-  #   @return [Boolean] Enable this only if you want to enable debugging for the webserver
   class WebServer < Reel::Server::HTTP
     include Celluloid::Logger
     include CelluloidPubsub::Helper
@@ -40,7 +24,7 @@ module CelluloidPubsub
     # The request path that the webserver accepts by default
     PATH = '/ws'
 
-    attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy, :use_redis, :debug_enabled
+    attr_accessor :options, :subscribers
     finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
@@ -64,10 +48,22 @@ module CelluloidPubsub
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
 
+    # the method will  return true if redis can be used otherwise false
+    #
+    #
+    # @return [Boolean]  return true if redis can be used otherwise false
+    #
+    # @api public
     def use_redis
       @use_redis ||= @options.fetch('use_redis', false)
     end
 
+    # the method will return true if debug is enabled otherwise false
+    #
+    #
+    # @return [Boolean] returns true if debug is enabled otherwise false
+    #
+    # @api public
     def debug_enabled?
       @debug_enabled = @options.fetch('enable_debug', false)
       @debug_enabled == true
@@ -84,66 +80,74 @@ module CelluloidPubsub
       terminate
     end
 
+    # the method will return the file path of the log file where debug messages will be printed
+    #
+    #
+    # @return [String] returns the file path of the log file where debug messages will be printed
+    #
+    # @api public
     def log_file_path
       @log_file_path ||= @options.fetch('log_file_path', nil)
     end
 
+    # the method will return the hostname on which the server is running on
+    #
+    #
+    # @return [String] returns the hostname on which the server is running on
+    #
+    # @api public
     def hostname
       @hostname ||= @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
     end
 
+    # the method will return the port on which will accept connections
+    #
+    #
+    # @return [String] returns the port on which will accept connections
+    #
+    # @api public
     def port
       @port ||= @options.fetch('port', CelluloidPubsub::WebServer::PORT)
     end
 
+    # the method will return the URL path on which will acceept connections
+    #
+    #
+    # @return [String] returns the URL path on which will acceept connections
+    #
+    # @api public
     def path
       @path ||= @options.fetch('path', CelluloidPubsub::WebServer::PATH)
     end
 
+    # the method will return true if connection to the server should be spied upon
+    #
+    #
+    # @return [Boolean] returns true if connection to the server should be spied upon, otherwise false
+    #
+    # @api public
     def spy
       @spy ||= @options.fetch('spy', false)
     end
 
+    # the method will return the number of connections allowed to the server
+    #
+    #
+    # @return [Integer] returns the number of connections allowed to the server
+    #
+    # @api public
     def backlog
       @backlog = @options.fetch('backlog', 1024)
     end
 
-    # :nocov:
-
-    def redis_enabled?
-      use_redis.to_s.downcase == 'true'
-    end
-
-    #  method for publishing data to a channel
+    # the method will return true if redis is enabled otherwise false
     #
-    # @param [String] current_topic The Channel to which the reactor instance {CelluloidPubsub::Rector} will publish the message to
-    # @param [Object] message
     #
-    # @return [void]
+    # @return [Boolean] returns true if redis is enabled otherwise false
     #
     # @api public
-    def publish_event(current_topic, message)
-      if redis_enabled?
-        publish_redis_event(current_topic, message)
-      else
-        publish_clasic_event(current_topic, message)
-      end
-    rescue => exception
-      log_debug("could not publish message #{message} into topic #{current_topic} because of #{exception.inspect}")
-    end
-
-    def publish_redis_event(topic, data)
-      return if !redis_enabled? || topic.blank? || data.blank?
-      CelluloidPubsub::Redis.connect do |connection|
-        connection.publish(topic, data)
-      end
-    end
-
-    def publish_clasic_event(channel, data)
-      return if channel.blank? || data.blank?
-      (@subscribers[channel] || []).each do |hash|
-        hash[:reactor].websocket << data
-      end
+    def redis_enabled?
+      use_redis.to_s.downcase == 'true'
     end
 
     #  callback that will execute when receiving new conections
@@ -180,10 +184,24 @@ module CelluloidPubsub
       end
     end
 
+    #  returns the reactor class that will handle the connection depending if redis is enabled or not
+    # @see #redis_enabled?
+    #
+    # @return [Class]  returns the reactor class that will handle the connection depending if redis is enabled or not
+    #
+    # @api public
     def reactor_class
       redis_enabled? ? CelluloidPubsub::RedisReactor : CelluloidPubsub::Reactor
     end
 
+    # method will instantiate a new reactor object, will link the reactor to the current actor and will dispatch the request to the reactor
+    # @see #route_websocket
+    #
+    # @param [Reel::WebSocket] request The request that was made to the webserver
+    #
+    # @return [void]
+    #
+    # @api public
     def dispatch_websocket_request(request)
       reactor = reactor_class.new
       Actor.current.link reactor

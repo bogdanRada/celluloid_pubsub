@@ -3,9 +3,9 @@ module CelluloidPubsub
   module Helper
     # checks if the message has the successfull subscription action
     #
-    # @param [string] message
+    # @param [string] message The message that will be checked
     #
-    # @return [void]
+    # @return [Boolean] return true if message contains key client_action with value 'succesfull_subscription'
     #
     # @api public
     def succesfull_subscription?(message)
@@ -14,6 +14,21 @@ module CelluloidPubsub
 
   module_function
 
+    # method used to determine if a action is a subsribe action
+    # @param [string] action The action that will be checked
+    #
+    # @return [Boolean] Returns true if the action equals to 'subscribe'
+    #
+    # @api public
+    def action_subscribe?(action)
+      action == 'subscribe'
+    end
+
+    # sets the celluloid logger and the celluloid exception handler
+    #
+    # @return [void]
+    #
+    # @api private
     def setup_celluloid_logger
       return if !debug_enabled? || (respond_to?(:log_file_path) && log_file_path.blank?)
       setup_log_file
@@ -21,6 +36,11 @@ module CelluloidPubsub
       setup_celluloid_exception_handler
     end
 
+    # sets the celluloid exception handler
+    #
+    # @return [void]
+    #
+    # @api private
     def setup_celluloid_exception_handler
       Celluloid.task_class = Celluloid::TaskThread
       Celluloid.exception_handler do |ex|
@@ -28,6 +48,11 @@ module CelluloidPubsub
       end
     end
 
+    # creates the log file where the debug messages will be printed
+    #
+    # @return [void]
+    #
+    # @api private
     def setup_log_file
       return if !debug_enabled? || (respond_to?(:log_file_path) && log_file_path.blank?)
       FileUtils.mkdir_p(File.dirname(log_file_path)) unless File.directory?(log_file_path)
@@ -35,28 +60,39 @@ module CelluloidPubsub
       log_file.sync = true
     end
 
+    # checks if a given error needs to be filtered
+    #
+    # @param [Exception::Error] error
+    #
+    # @return [Boolean] returns true if the error should be filtered otherwise false
+    #
+    # @api private
     def filtered_error?(error)
       [Interrupt].any? { |class_name| error.is_a?(class_name) }
     end
 
-    #  receives a list of options that are used to configure the webserver
+    #  receives a list of options that need to be parsed
+    # if it is an Array will return the first element , otherwise if it is
+    # an Hash will return the hash with string keys, otherwise an empty hash
     #
-    # @param  [Hash]  options the options that can be used to connect to webser and send additional data
-    # @option options [String]:hostname The hostname on which the webserver runs on
-    # @option options [Integer] :port The port on which the webserver runs on
-    # @option options [String] :path The request path that the webserver accepts
-    # @option options [Boolean] :spy Enable this only if you want to enable debugging for the webserver
-    # @option options [Integer]:backlog How many connections the server accepts
+    # @param  [Hash, Array]  options the options that need to be parsed
     #
-    # @return [void]
+    # @return [Hash]
     #
-    # @api public
+    # @api private
     def parse_options(options)
       options = options.is_a?(Array) ? options.first : options
       options = options.is_a?(Hash) ? options.stringify_keys : {}
       options
     end
 
+    #  receives a message, and logs it to the log file if debug is enabled
+    #
+    # @param  [Object] message
+    #
+    # @return [void]
+    #
+    # @api private
     def log_debug(message)
       debug message if respond_to?(:debug_enabled?) && debug_enabled?
     end
