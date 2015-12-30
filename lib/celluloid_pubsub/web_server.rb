@@ -256,7 +256,7 @@ module CelluloidPubsub
       if message.present? && message.is_a?(Hash)
         final_data = message.to_json
       else
-        final_data data.to_json
+        final_data = data.to_json
       end
       reactor.websocket << final_data
     end
