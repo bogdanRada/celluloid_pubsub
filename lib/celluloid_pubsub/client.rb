@@ -7,40 +7,28 @@ module CelluloidPubsub
   # @!attribute actor
   #   @return [Celluloid::Actor] actor to which callbacks will be delegated to
   #
-  # @!attribute connect_blk
-  #   @return [Proc] Block  that will execute after the connection is opened
-  #
-  # @!attribute connection
-  #   @return [Celluloid::WebSocket::Client] A websocket connection that is used to chat witht the webserver
-  #
   # @!attribute options
   #   @return [Hash] the options that can be used to connect to webser and send additional data
   #
-  # @!attribute hostname
-  #   @return [String] The hostname on which the webserver runs on
-  #
-  # @!attribute port
-  #  @return [String] The port on which the webserver runs on
-  #
-  # @!attribute path
-  #   @return [String] The hostname on which the webserver runs on
+  # @!attribute channel
+  #   @return [String] The channel to which the client will subscribe to
   class Client
     include Celluloid
     include Celluloid::Logger
     include CelluloidPubsub::Helper
 
-    attr_reader :actor, :connection, :options, :hostname, :port, :path, :channel
+    attr_accessor :actor, :options, :channel
     finalizer :shutdown
     #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
     #  when receiving messages from a channel
     #
     # @param  [Hash]  options the options that can be used to connect to webser and send additional data
     # @option options [String] :actor The actor that made the connection
+    # @option options [String] :channel The channel to which the client will subscribe to once the connection is open
+    # @option options [String] :log_file_path The path to the log file where debug messages will be printed, otherwise will use STDOUT
     # @option options [String]:hostname The hostname on which the webserver runs on
     # @option options [String] :port The port on which the webserver runs on
     # @option options [String] :path The request path that the webserver accepts
-    #
-    # @param [Proc] connect_blk  Block  that will execute after the connection is opened
     #
     # @return [void]
     #
@@ -50,11 +38,15 @@ module CelluloidPubsub
       @actor ||= @options.fetch('actor', nil)
       @channel ||= @options.fetch('channel', nil)
       raise "#{self}: Please provide an actor in the options list!!!" if @actor.blank?
-      raise "#{self}: Please provide an channel in the options list!!!" if @channel.blank?
       supervise_actors
       setup_celluloid_logger
     end
 
+    # the method will return the path to the log file where debug messages will be printed
+    #
+    # @return [String, nil] return the path to the log file where debug messages will be printed
+    #
+    # @api public
     def log_file_path
       @log_file_path ||= @options.fetch('log_file_path', nil)
     end
@@ -80,14 +72,32 @@ module CelluloidPubsub
       @connection ||= Celluloid::WebSocket::Client.new("ws://#{hostname}:#{port}#{path}", Actor.current)
     end
 
+    # the method will return the hostname of the server
+    #
+    #
+    # @return [String] the hostname where the server runs on
+    #
+    # @api public
     def hostname
       @hostname ||= @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
     end
 
+    # the method will return the port on which the server accepts connections
+    #
+    #
+    # @return [String] the port on which the server accepts connections
+    #
+    # @api public
     def port
       @port ||= @options.fetch('port', CelluloidPubsub::WebServer::PORT)
     end
 
+    # the method will return the path of the URL on which the servers acccepts the connection
+    #
+    #
+    # @return [String] the URL path that the server is mounted on
+    #
+    # @api public
     def path
       @path ||= @options.fetch('path', CelluloidPubsub::WebServer::PATH)
     end
@@ -175,11 +185,7 @@ module CelluloidPubsub
     # @api public
     def on_open
       log_debug("#{@actor.class} websocket connection opened")
-      async.subscribe(@channel)
-    end
-
-    def log_debug(message)
-      debug message if debug_enabled?
+      async.subscribe(@channel) if @channel.present?
     end
 
     # callback executes when actor receives a message from a subscribed channel

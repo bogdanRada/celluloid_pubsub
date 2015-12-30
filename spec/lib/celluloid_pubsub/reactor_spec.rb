@@ -110,7 +110,7 @@ describe CelluloidPubsub::Reactor do
 
     it 'publish' do
       data = { 'client_action' => 'publish', 'channel' => 'some channel', 'data' => 'some data' }
-      server.expects(:publish_event).with(data['channel'], data['data'].to_json)
+      subject.expects(:publish_event).with(data['channel'], data['data'].to_json)
       subject.delegate_action(data)
     end
 
@@ -196,7 +196,7 @@ describe CelluloidPubsub::Reactor do
   describe '#add_subscriber_to_channel' do
     let(:channel) { 'some channel' }
     let(:message) { { a: 'b' } }
-    let(:subscribers) {mock}
+    let(:subscribers) { mock }
 
     it 'adds subscribed' do
       CelluloidPubsub::Registry.channels.stubs(:include?).with(channel).returns(false)
