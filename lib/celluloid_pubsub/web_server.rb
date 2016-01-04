@@ -24,7 +24,7 @@ module CelluloidPubsub
     # The request path that the webserver accepts by default
     PATH = '/ws'
 
-    attr_accessor :options, :subscribers
+    attr_accessor :server_options, :subscribers
     finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
@@ -41,7 +41,7 @@ module CelluloidPubsub
     # :nocov:
     def initialize(options = {})
       Celluloid.boot unless Celluloid.running?
-      @options = parse_options(options)
+      @server_options = parse_options(options)
       @subscribers = {}
       setup_celluloid_logger
       log_debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
@@ -55,7 +55,7 @@ module CelluloidPubsub
     #
     # @api public
     def use_redis
-      @use_redis ||= @options.fetch('use_redis', false)
+      @use_redis = @server_options.fetch('use_redis', false)
     end
 
     # the method will return true if debug is enabled otherwise false
@@ -65,7 +65,7 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @debug_enabled = @options.fetch('enable_debug', false)
+      @debug_enabled = @server_options.fetch('enable_debug', false)
       @debug_enabled == true
     end
 
@@ -87,7 +87,7 @@ module CelluloidPubsub
     #
     # @api public
     def log_file_path
-      @log_file_path ||= @options.fetch('log_file_path', nil)
+      @log_file_path = @server_options.fetch('log_file_path', nil)
     end
 
     # the method will return the hostname on which the server is running on
@@ -97,7 +97,7 @@ module CelluloidPubsub
     #
     # @api public
     def hostname
-      @hostname ||= @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
+      @hostname = @server_options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
     end
 
     # the method will return the port on which will accept connections
@@ -107,7 +107,7 @@ module CelluloidPubsub
     #
     # @api public
     def port
-      @port ||= @options.fetch('port', CelluloidPubsub::WebServer::PORT)
+      @port = @server_options.fetch('port', CelluloidPubsub::WebServer::PORT)
     end
 
     # the method will return the URL path on which will acceept connections
@@ -117,7 +117,7 @@ module CelluloidPubsub
     #
     # @api public
     def path
-      @path ||= @options.fetch('path', CelluloidPubsub::WebServer::PATH)
+      @path = @server_options.fetch('path', CelluloidPubsub::WebServer::PATH)
     end
 
     # the method will return true if connection to the server should be spied upon
@@ -127,7 +127,7 @@ module CelluloidPubsub
     #
     # @api public
     def spy
-      @spy ||= @options.fetch('spy', false)
+      @spy = @server_options.fetch('spy', false)
     end
 
     # the method will return the number of connections allowed to the server
@@ -137,7 +137,7 @@ module CelluloidPubsub
     #
     # @api public
     def backlog
-      @backlog = @options.fetch('backlog', 1024)
+      @backlog = @server_options.fetch('backlog', 1024)
     end
 
     # the method will return true if redis is enabled otherwise false

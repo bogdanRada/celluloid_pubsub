@@ -183,7 +183,7 @@ module CelluloidPubsub
     # @api private
     def redis_action(action, channel = nil, message = {})
       fetch_pubsub do |pubsub|
-        callback = prepare_redis_action(action)
+        callback = prepare_redis_action(pubsub, action)
         success_message = action_success(action, channel, message)
         subscription = pubsub.send(action, channel, callback)
         register_subscription_callbacks(subscription, action, success_message)
@@ -199,7 +199,7 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api private
-    def prepare_redis_action(action)
+    def prepare_redis_action(pubsub, action)
       log_unsubscriptions(pubsub)
       proc do |subscribed_message|
         action_subscribe?(action) ? (@websocket << subscribed_message) : log_debug(message)
