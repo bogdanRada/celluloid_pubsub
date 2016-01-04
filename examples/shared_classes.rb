@@ -6,7 +6,6 @@ debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
 use_redis = ENV['USE_REDIS'].present? && ENV['USE_REDIS'].to_s == 'true'
 log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
 
-
 # actor that subscribes to a channel
 class Subscriber
   include Celluloid
