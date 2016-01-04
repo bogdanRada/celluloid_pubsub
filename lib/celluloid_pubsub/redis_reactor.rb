@@ -185,7 +185,8 @@ module CelluloidPubsub
       fetch_pubsub do |pubsub|
         callback = prepare_redis_action(pubsub, action)
         success_message = action_success(action, channel, message)
-        subscription = pubsub.send(action, channel, callback)
+        args = action_subscribe?(action) ? [channel, callback] : [channel]
+        subscription = pubsub.send(action, *args)
         register_subscription_callbacks(subscription, action, success_message)
       end
     end
@@ -233,10 +234,19 @@ module CelluloidPubsub
     #
     # @api private
     def register_subscription_callbacks(subscription, action, sucess_message = nil)
-      register_redis_callback(subscription, sucess_message)
+      register_redis_callback(subscription,action, sucess_message)
       register_redis_error_callback(subscription, action)
     end
-
+    # the method will return true if debug is enabled
+    #
+    #
+    # @return [Boolean] returns true if debug is enabled otherwise false
+    #
+    # @api public
+    def debug_enabled?
+      @server.debug_enabled?
+    end
+    
     # method used to register a success callback  and if action is subscribe will write
     # back to the websocket a message that will say it is a successful_subscription
     # If action is something else, will log the incoming message
@@ -248,12 +258,12 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api private
-    def register_redis_callback(subscription, sucess_message = nil)
+    def register_redis_callback(subscription, action, sucess_message = nil)
       subscription.callback do |subscriptions_ids|
         if sucess_message.present?
           @websocket << sucess_message.merge('subscriptions' => subscriptions_ids).to_json
         else
-          log_debug "#{action} success #{success_response.inspect}"
+          log_debug "#{action} success #{sucess_message.inspect}"
         end
       end
     end
