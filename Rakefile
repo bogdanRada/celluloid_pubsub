@@ -3,7 +3,6 @@ require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'coveralls/rake/task'
 require 'yard'
-require 'yard-rspec'
 Coveralls::RakeTask.new
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
@@ -27,10 +26,10 @@ task :all do |_t|
   if ENV['TRAVIS']
     exec('bundle exec rake  spec && bundle exec rake coveralls:push')
   else
-    exec('bundle exec rubocop -a . && bundle exec rake spec')
+    exec('bundle exec rake spec')
   end
 end
 
 task :docs do
-  exec(' bundle exec rubocop -a . && bundle exec inch --pedantic && bundle exec yard')
+  exec('bundle exec inch --pedantic && bundle exec yard --list-undoc')
 end

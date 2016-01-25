@@ -25,15 +25,13 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'em-hiredis', '~> 0.3', '>= 0.3.0'
   s.add_runtime_dependency 'json', '~> 1.8', '>= 1.8.3'
 
-  s.add_development_dependency 'rspec-rails', '~> 3.3', '>= 3.3'
+  s.add_development_dependency 'rspec', '~> 3.4', '>= 3.4'
   s.add_development_dependency 'simplecov', '~> 0.10', '>= 0.10'
   s.add_development_dependency 'simplecov-summary', '~> 0.0.4', '>= 0.0.4'
   s.add_development_dependency 'mocha', '~> 1.1', '>= 1.1'
   s.add_development_dependency 'coveralls', '~> 0.7', '>= 0.7'
 
-  s.add_development_dependency 'rubocop', '~> 0.33', '>= 0.33'
   s.add_development_dependency 'yard', '~> 0.8', '>= 0.8.7'
-  s.add_development_dependency 'yard-rspec', '~> 0.1', '>= 0.1'
   s.add_development_dependency 'redcarpet', '~> 3.3', '>= 3.3'
   s.add_development_dependency 'github-markup', '~> 1.3', '>= 1.3.3'
   s.add_development_dependency 'inch', '~> 0.6', '>= 0.6'
