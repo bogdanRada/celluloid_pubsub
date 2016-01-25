@@ -231,9 +231,10 @@ module CelluloidPubsub
     #
     # @api private
     def register_subscription_callbacks(subscription, action, sucess_message = nil)
-      register_redis_callback(subscription,action, sucess_message)
+      register_redis_callback(subscription, action, sucess_message)
       register_redis_error_callback(subscription, action)
     end
+
     # the method will return true if debug is enabled
     #
     #
