@@ -65,9 +65,6 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe_all
-      @channels.each do |channel|
-        async.redis_action('unsubscribe', channel)
-      end
       info 'clearing connections'
       shutdown
     end
@@ -79,7 +76,7 @@ module CelluloidPubsub
     #
     # @api public
     def shutdown
-      @channels.each do |channel|
+      @channels.dup.each do |channel|
         redis_action('unsubscribe', channel)
       end if @channels.present?
       super
@@ -246,7 +243,7 @@ module CelluloidPubsub
     def debug_enabled?
       @server.debug_enabled?
     end
-    
+
     # method used to register a success callback  and if action is subscribe will write
     # back to the websocket a message that will say it is a successful_subscription
     # If action is something else, will log the incoming message
