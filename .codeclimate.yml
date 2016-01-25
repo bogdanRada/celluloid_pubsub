@@ -3,9 +3,9 @@ engines:
   bundler-audit:
     enabled: true
   csslint:
-    enabled: true
+    enabled: false
   eslint:
-    enabled: true
+    enabled: false
   fixme:
     enabled: true
   rubocop:
