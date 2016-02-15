@@ -1,11 +1,18 @@
 require_relative './helper'
 module CelluloidPubsub
   # base actor used for compatibility between celluloid versions
-  class BaseActor
+  module BaseActor
     extend Helper
 
     class << self
       attr_reader :config
+
+      def included(base)
+        base.include Celluloid
+        base.include Celluloid::IO
+        base.include CelluloidPubsub::Helper
+        base.include config['logger_class']
+      end
 
       def config
         {
@@ -38,15 +45,11 @@ module CelluloidPubsub
       end
 
     end
-
-    include Celluloid
-    include Celluloid::IO
-    include config['logger_class']
   end
 end
 
 if CelluloidPubsub::BaseActor.version_less_than_seventeen?
-  require 'celluloid'
+  require 'celluloid/autostart'
 else
   require 'celluloid/current'
 end

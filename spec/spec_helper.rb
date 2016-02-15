@@ -45,10 +45,9 @@ RSpec.configure do |config|
   end
 end
 
+
 # class used for testing actions
-class TestActor
-  include Celluloid
-  include CelluloidPubsub::BackwardCompatible.config['logger_class']
+class TestActor < CelluloidPubsub::BaseActor
 end
 
 TestActor.supervise(as: :test_actor)

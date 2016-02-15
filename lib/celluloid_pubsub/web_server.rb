@@ -1,4 +1,5 @@
 require_relative './reactor'
+require_relative './helper'
 module CelluloidPubsub
   # webserver to which socket connects should connect to .
   # the server will dispatch each request into a new Reactor
@@ -12,24 +13,8 @@ module CelluloidPubsub
   #
   # @!attribute subscribers
   #   @return [Hash] The hostname on which the webserver runs on
-  #
-  # @!attribute backlog
-  #   @return [Integer] Determines how many connections can be used
-  #   Defaults to 1024
-  #
-  # @!attribute hostname
-  #   @return [String] The hostname on which the webserver runs on
-  #
-  # @!attribute port
-  #  @return [String] The port on which the webserver runs on
-  #
-  # @!attribute path
-  #   @return [String] The hostname on which the webserver runs on
-  #
-  # @!attribute spy
-  #   @return [Boolean] Enable this only if you want to enable debugging for the webserver
   class WebServer < Reel::Server::HTTP
-    include CelluloidPubsub::BaseActor.config['logger_class']
+    include CelluloidPubsub::BaseActor
 
     # The hostname on which the webserver runs on by default
     HOST = '0.0.0.0'
@@ -38,8 +23,8 @@ module CelluloidPubsub
     # The request path that the webserver accepts by default
     PATH = '/ws'
 
-    attr_accessor :options, :subscribers, :backlog, :hostname, :port, :path, :spy
-
+    attr_accessor :server_options, :subscribers
+    finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
     # @param  [Hash]  options the options that can be used to connect to webser and send additional data
@@ -54,63 +39,114 @@ module CelluloidPubsub
     #
     # :nocov:
     def initialize(options = {})
-      parse_options(options)
+      Celluloid.boot unless Celluloid.running?
+      @server_options = parse_options(options)
       @subscribers = {}
-      info "CelluloidPubsub::WebServer example starting on #{@hostname}:#{@port}" if debug_enabled?
-      super(@hostname, @port, { spy: @spy, backlog: @backlog }, &method(:on_connection))
+      setup_celluloid_logger
+      log_debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
+      super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
-    # :nocov:
 
-    #  receives a list of options that are used to configure the webserver
+    # the method will  return true if redis can be used otherwise false
     #
-    # @param  [Hash]  options the options that can be used to connect to webser and send additional data
-    # @option options [String]:hostname The hostname on which the webserver runs on
-    # @option options [Integer] :port The port on which the webserver runs on
-    # @option options [String] :path The request path that the webserver accepts
-    # @option options [Boolean] :spy Enable this only if you want to enable debugging for the webserver
-    # @option options [Integer]:backlog How many connections the server accepts
     #
-    # @return [void]
+    # @return [Boolean]  return true if redis can be used otherwise false
     #
     # @api public
-    def parse_options(options)
-      raise 'Options is not a hash ' unless options.is_a?(Hash)
-      @options = options.stringify_keys
-      debug @options if debug_enabled?
-      @backlog = @options.fetch('backlog', 1024)
-      @hostname = @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
-      @port = @options.fetch('port', CelluloidPubsub::WebServer::PORT)
-      @path = @options.fetch('path', CelluloidPubsub::WebServer::PATH)
-      @spy = @options.fetch('spy', false)
+    def use_redis
+      @use_redis = @server_options.fetch('use_redis', false)
     end
 
-    #  checks if debug is enabled
+    # the method will return true if debug is enabled otherwise false
     #
-    # @return [boolean]
+    #
+    # @return [Boolean] returns true if debug is enabled otherwise false
     #
     # @api public
     def debug_enabled?
-      @options.fetch('enable_debug', false).to_s == 'true'
+      @debug_enabled = @server_options.fetch('enable_debug', false)
+      @debug_enabled == true
     end
 
-    #  method for publishing data to a channel
+    # the method will terminate the current actor
     #
-    # @param [String] current_topic The Channel to which the reactor instance {CelluloidPubsub::Rector} will publish the message to
-    # @param [Object] message
     #
     # @return [void]
     #
     # @api public
-    def publish_event(current_topic, message)
-      return if current_topic.blank? || message.blank? || @subscribers[current_topic].blank?
-      begin
-        topic_subscribers = @subscribers[current_topic].dup
-        topic_subscribers.each do |hash|
-          hash[:reactor].websocket << message
-        end
-      rescue => e
-        debug("could not publish message #{message} into topic #{current_topic} because of #{e.inspect}") if debug_enabled?
-      end
+    def shutdown
+      debug "#{self.class} tries to 'shudown'"
+      terminate
+    end
+
+    # the method will return the file path of the log file where debug messages will be printed
+    #
+    #
+    # @return [String] returns the file path of the log file where debug messages will be printed
+    #
+    # @api public
+    def log_file_path
+      @log_file_path = @server_options.fetch('log_file_path', nil)
+    end
+
+    # the method will return the hostname on which the server is running on
+    #
+    #
+    # @return [String] returns the hostname on which the server is running on
+    #
+    # @api public
+    def hostname
+      @hostname = @server_options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
+    end
+
+    # the method will return the port on which will accept connections
+    #
+    #
+    # @return [String] returns the port on which will accept connections
+    #
+    # @api public
+    def port
+      @port = @server_options.fetch('port', CelluloidPubsub::WebServer::PORT)
+    end
+
+    # the method will return the URL path on which will acceept connections
+    #
+    #
+    # @return [String] returns the URL path on which will acceept connections
+    #
+    # @api public
+    def path
+      @path = @server_options.fetch('path', CelluloidPubsub::WebServer::PATH)
+    end
+
+    # the method will return true if connection to the server should be spied upon
+    #
+    #
+    # @return [Boolean] returns true if connection to the server should be spied upon, otherwise false
+    #
+    # @api public
+    def spy
+      @spy = @server_options.fetch('spy', false)
+    end
+
+    # the method will return the number of connections allowed to the server
+    #
+    #
+    # @return [Integer] returns the number of connections allowed to the server
+    #
+    # @api public
+    def backlog
+      @backlog = @server_options.fetch('backlog', 1024)
+    end
+
+    # the method will return true if redis is enabled otherwise false
+    #
+    #
+    # @return [Boolean] returns true if redis is enabled otherwise false
+    #
+    # @api public
+    def redis_enabled?
+      use_redis.to_s.downcase == 'true'
     end
 
     #  callback that will execute when receiving new conections
@@ -129,7 +165,7 @@ module CelluloidPubsub
     def on_connection(connection)
       while request = connection.request
         if request.websocket?
-          info 'Received a WebSocket connection' if debug_enabled?
+          log_debug "#{self.class} Received a WebSocket connection"
 
           # We're going to hand off this connection to another actor (Writer/Reader)
           # However, initially Reel::Connections are "attached" to the
@@ -139,12 +175,36 @@ module CelluloidPubsub
           # If we want to hand this connection off to another actor, we first
           # need to detach it from the Reel::Server (in this case, Reel::Server::HTTP)
           connection.detach
-          route_websocket(request.websocket)
+          dispatch_websocket_request(request)
           return
         else
           route_request connection, request
         end
       end
+    end
+
+    #  returns the reactor class that will handle the connection depending if redis is enabled or not
+    # @see #redis_enabled?
+    #
+    # @return [Class]  returns the reactor class that will handle the connection depending if redis is enabled or not
+    #
+    # @api public
+    def reactor_class
+      redis_enabled? ? CelluloidPubsub::RedisReactor : CelluloidPubsub::Reactor
+    end
+
+    # method will instantiate a new reactor object, will link the reactor to the current actor and will dispatch the request to the reactor
+    # @see #route_websocket
+    #
+    # @param [Reel::WebSocket] request The request that was made to the webserver
+    #
+    # @return [void]
+    #
+    # @api public
+    def dispatch_websocket_request(request)
+      reactor = reactor_class.new
+      Actor.current.link reactor
+      route_websocket(reactor, request.websocket)
     end
 
     #  HTTP connections are not accepted so this method will show 404 message "Not Found"
@@ -156,7 +216,7 @@ module CelluloidPubsub
     #
     # @api public
     def route_request(connection, request)
-      info "404 Not Found: #{request.path}" if debug_enabled?
+      log_debug "404 Not Found: #{request.path}"
       connection.respond :not_found, 'Not found'
     end
 
@@ -170,14 +230,12 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def route_websocket(socket)
-      if socket.url == @path
-        info 'Reactor handles new socket connection' if debug_enabled?
-        reactor = CelluloidPubsub::Reactor.new
-        Actor.current.link reactor
+    def route_websocket(reactor, socket)
+      url = socket.url
+      if url == path
         reactor.async.work(socket, Actor.current)
       else
-        info "Received invalid WebSocket request for: #{socket.url}" if debug_enabled?
+        log_debug "Received invalid WebSocket request for: #{url}"
         socket.close
       end
     end
@@ -192,13 +250,14 @@ module CelluloidPubsub
     #
     # @api public
     def handle_dispatched_message(reactor, data)
-      debug "Webserver trying to dispatch message  #{data.inspect}" if debug_enabled?
+      log_debug "#{self.class} trying to dispatch message  #{data.inspect}"
       message = reactor.parse_json_data(data)
       if message.present? && message.is_a?(Hash)
-        reactor.websocket << message.to_json
+        final_data = message.to_json
       else
-        reactor.websocket << data.to_json
+        final_data = data.to_json
       end
+      reactor.websocket << final_data
     end
   end
 end
