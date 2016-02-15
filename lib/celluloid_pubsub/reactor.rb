@@ -1,6 +1,6 @@
 require_relative './registry'
+require_relative './helper'
 module CelluloidPubsub
-  # rubocop:disable ClassLength
   # The reactor handles new connections. Based on what the client sends it either subscribes to a channel
   # or will publish to a channel or just dispatch to the server if command is neither subscribe, publish or unsubscribe
   #
@@ -12,10 +12,11 @@ module CelluloidPubsub
   #
   # @!attribute channels
   #   @return [Array] array of channels to which the current reactor has subscribed to
-  class Reactor < CelluloidPubsub::BaseActor
+  class Reactor 
+    include CelluloidPubsub::BaseActor
 
     attr_accessor :websocket, :server, :channels
-
+    finalizer :shutdown
     #  rececives a new socket connection from the server
     #  and listens for messages
     #
@@ -28,8 +29,18 @@ module CelluloidPubsub
       @server = server
       @channels = []
       @websocket = websocket
-      info "Streaming changes for #{websocket.url}" if @server.debug_enabled?
+      log_debug "#{self.class} Streaming changes for #{websocket.url}"
       async.run
+    end
+
+    # the method will return true if debug is enabled
+    #
+    #
+    # @return [Boolean] returns true if debug is enabled otherwise false
+    #
+    # @api public
+    def debug_enabled?
+      @server.debug_enabled?
     end
 
     # reads from the socket the message
@@ -42,8 +53,10 @@ module CelluloidPubsub
     #
     # :nocov:
     def run
-      while Actor.current.alive? && !@websocket.closed? && message = try_read_websocket
-        handle_websocket_message(message)
+      loop do
+        break if !Actor.current.alive? || @websocket.closed? || !@server.alive?
+        message = try_read_websocket
+        handle_websocket_message(message) if message.present?
       end
     end
 
@@ -56,16 +69,20 @@ module CelluloidPubsub
     #
     # :nocov:
     def try_read_websocket
-      message = nil
-      begin
-        message = @websocket.read
-      rescue => e
-        debug(e) if @server.debug_enabled?
-      end
-      message
+      @websocket.closed? ? nil : @websocket.read
+    rescue Reel::SocketError
+      nil
     end
 
-    # :nocov:
+    # the method will return the reactor's class name used in debug messages
+    #
+    #
+    # @return [Class] returns the reactor's class name used in debug messages
+    #
+    # @api public
+    def reactor_class
+      self.class
+    end
 
     # method used to parse a JSON object into a Hash object
     #
@@ -75,16 +92,10 @@ module CelluloidPubsub
     #
     # @api public
     def parse_json_data(message)
-      debug "Reactor read message  #{message}" if @server.debug_enabled?
-      json_data = nil
-      begin
-        json_data = JSON.parse(message)
-      rescue => e
-        debug "Reactor could not parse #{message} because of #{e.inspect}" if @server.debug_enabled?
-        # do nothing
-      end
-      json_data = message if json_data.nil?
-      json_data
+      JSON.parse(message)
+    rescue => exception
+      log_debug "#{reactor_class} could not parse #{message} because of #{exception.inspect}"
+      message
     end
 
     # method that handles the message received from the websocket connection
@@ -101,6 +112,7 @@ module CelluloidPubsub
     #
     # @api public
     def handle_websocket_message(message)
+      log_debug "#{reactor_class} read message  #{message}"
       json_data = parse_json_data(message)
       handle_parsed_websocket_message(json_data)
     end
@@ -121,7 +133,7 @@ module CelluloidPubsub
     def handle_parsed_websocket_message(json_data)
       if json_data.is_a?(Hash)
         json_data = json_data.stringify_keys
-        debug "Reactor finds actions for  #{json_data}" if @server.debug_enabled?
+        log_debug "#{self.class} finds actions for  #{json_data}"
         delegate_action(json_data) if json_data['client_action'].present?
       else
         handle_unknown_action(json_data)
@@ -140,7 +152,8 @@ module CelluloidPubsub
     # @option json_data [String] :client_action The action based on which the reactor will decide what action should make
     #
     #   Possible values are:
-    #     unsubscribe_client
+    #     unsubscribe_all
+    #     unsubscribe_clients
     #     unsubscribe
     #     subscribe
     #     publish
@@ -150,17 +163,18 @@ module CelluloidPubsub
     #
     # @api public
     def delegate_action(json_data)
+      channel = json_data.fetch('channel', nil)
       case json_data['client_action']
         when 'unsubscribe_all'
           unsubscribe_all
         when 'unsubscribe_clients'
-          async.unsubscribe_clients(json_data['channel'])
+          async.unsubscribe_clients(channel)
         when 'unsubscribe'
-          async.unsubscribe(json_data['channel'])
+          async.unsubscribe(channel)
         when 'subscribe'
-          async.start_subscriber(json_data['channel'], json_data)
+          async.start_subscriber(channel, json_data)
         when 'publish'
-          @server.publish_event(json_data['channel'], json_data['data'].to_json)
+          async.publish_event(channel, json_data['data'].to_json)
         else
           handle_unknown_action(json_data)
       end
@@ -175,8 +189,24 @@ module CelluloidPubsub
     #
     # @api public
     def handle_unknown_action(json_data)
-      debug "Trying to dispatch   to server  #{json_data}" if @server.debug_enabled?
+      log_debug "Trying to dispatch   to server  #{json_data}"
       @server.async.handle_dispatched_message(Actor.current, json_data)
+    end
+
+    # if the reactor has unsubscribed from all his channels will close the websocket connection,
+    # otherwise will delete the channel from his channel list
+    #
+    # @param [String] channel  The channel that needs to be deleted from the reactor's list of subscribed channels
+    #
+    # @return [void]
+    #
+    # @api public
+    def forget_channel(channel)
+      if @channels.blank?
+        @websocket.close
+      else
+        @channels.delete(channel)
+      end
     end
 
     # the method will unsubscribe a client by closing the websocket connection if has unscribed from all channels
@@ -188,12 +218,12 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe(channel)
+      log_debug "#{self.class} runs 'unsubscribe' method with  #{channel}"
       return unless channel.present?
-      @channels.delete(channel) unless @channels.blank?
-      @websocket.close if @channels.blank?
-      @server.subscribers[channel].delete_if do |hash|
+      forget_channel(channel)
+      (@server.subscribers[channel] || []).delete_if do |hash|
         hash[:reactor] == Actor.current
-      end if @server.subscribers[channel].present?
+      end
     end
 
     # the method will unsubscribe all  clients subscribed to a channel by closing the
@@ -204,7 +234,8 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe_clients(channel)
-      return if channel.blank? || @server.subscribers[channel].blank?
+      log_debug "#{self.class} runs 'unsubscribe_clients' method with  #{channel}"
+      return if channel.blank?
       unsubscribe_from_channel(channel)
       @server.subscribers[channel] = []
     end
@@ -216,6 +247,8 @@ module CelluloidPubsub
     #
     # @api public
     def shutdown
+      debug "#{self.class} tries to 'shudown'"
+      @websocket.close if @websocket.present? && !@websocket.closed?
       terminate
     end
 
@@ -233,8 +266,20 @@ module CelluloidPubsub
     def start_subscriber(channel, message)
       return unless channel.present?
       add_subscriber_to_channel(channel, message)
-      debug "Subscribed to #{channel} with #{message}" if @server.debug_enabled?
-      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json
+      log_debug "#{self.class} subscribed to #{channel} with #{message}"
+      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json unless @server.redis_enabled?
+    end
+
+    # this method will return a list of all subscribers to a particular channel or a empty array
+    #
+    #
+    # @param [String] channel The channel that will be used to fetch all subscribers from this channel
+    #
+    # @return [Array] returns a list of all subscribers to a particular channel or a empty array
+    #
+    # @api public
+    def channel_subscribers(channel)
+      @server.subscribers[channel] || []
     end
 
     # adds the curent actor the list of the subscribers for a particular channel
@@ -247,10 +292,27 @@ module CelluloidPubsub
     #
     # @api public
     def add_subscriber_to_channel(channel, message)
+      registry_channels = CelluloidPubsub::Registry.channels
       @channels << channel
-      CelluloidPubsub::Registry.channels << channel unless CelluloidPubsub::Registry.channels.include?(channel)
-      @server.subscribers[channel] ||= []
-      @server.subscribers[channel] << { reactor: Actor.current, message: message }
+      registry_channels << channel unless registry_channels.include?(channel)
+      @server.subscribers[channel] = channel_subscribers(channel).push(reactor: Actor.current, message: message)
+    end
+
+    #  method for publishing data to a channel
+    #
+    # @param [String] current_topic The Channel to which the reactor instance {CelluloidPubsub::Reactor} will publish the message to
+    # @param [Object] message
+    #
+    # @return [void]
+    #
+    # @api public
+    def publish_event(current_topic, message)
+      return if current_topic.blank? || message.blank?
+      (@server.subscribers[current_topic].dup || []).each do |hash|
+        hash[:reactor].websocket << message
+      end
+    rescue => exception
+      log_debug("could not publish message #{message} into topic #{current_topic} because of #{exception.inspect}")
     end
 
     # unsubscribes all actors from all channels and terminates the curent actor
@@ -259,12 +321,11 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe_all
-      CelluloidPubsub::Registry.channels.map do |channel|
-        unsubscribe_from_channel(channel)
-        @server.subscribers[channel] = []
+      log_debug "#{self.class} runs 'unsubscribe_all' method"
+      CelluloidPubsub::Registry.channels.dup.each do |channel|
+        unsubscribe_clients(channel)
       end
-
-      info 'clearing connections' if @server.debug_enabled?
+      log_debug 'clearing connections'
       shutdown
     end
 
@@ -275,9 +336,11 @@ module CelluloidPubsub
     #
     # @api public
     def unsubscribe_from_channel(channel)
-      @server.subscribers[channel].each do |hash|
-        hash[:reactor].websocket.close
-        Celluloid::Actor.kill(hash[:reactor])
+      log_debug "#{self.class} runs 'unsubscribe_from_channel' method with #{channel}"
+      (@server.subscribers[channel].dup || []).each do |hash|
+        reactor = hash[:reactor]
+        reactor.websocket.close
+        Celluloid::Actor.kill(reactor)
       end
     end
   end

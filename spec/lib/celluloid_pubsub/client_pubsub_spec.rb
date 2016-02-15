@@ -3,32 +3,23 @@
 require 'spec_helper'
 
 describe CelluloidPubsub::Client do
-  let(:options) { {} }
-  let(:blk) { proc { |a| puts a } }
-
-  it 'runs the connect method' do
-    expected = nil
-    CelluloidPubsub::Client::PubSubWorker.stubs(:new).returns(expected)
-    res = CelluloidPubsub::Client.connect(options, &blk)
-    expect(res).to eq expected
-  end
-end
-
-describe CelluloidPubsub::Client::PubSubWorker do
   let(:blk) { proc { |a| puts a } }
   let(:options) { {} }
-  let(:socket) { mock }
   let(:actor) { mock }
+  let(:connection) { mock }
   let(:channel) { 'some_channel' }
 
   before(:each) do
-    Celluloid::WebSocket::Client.stubs(:new).returns(socket)
-    socket.stubs(:text)
-    @worker = CelluloidPubsub::Client::PubSubWorker.new({ 'actor' => actor, channel: channel, enable_debug: true }, &blk)
-    @worker.stubs(:client).returns(socket)
-    @worker.stubs(:debug)
+    CelluloidPubsub::Client.any_instance.stubs(:supervise_actors).returns(true)
+    CelluloidPubsub::Client.any_instance.stubs(:connection).returns(connection)
+    @worker = CelluloidPubsub::Client.new(actor: actor, channel: channel, enable_debug: false)
+    @worker.stubs(:debug).returns(true)
     @worker.stubs(:async).returns(@worker)
     actor.stubs(:async).returns(actor)
+    actor.stubs(:respond_to?).returns(false)
+    actor.stubs(:terminate).returns(true)
+    connection.stubs(:terminate).returns(true)
+    connection.stubs(:text).returns(true)
   end
 
   describe '#initialize' do
@@ -38,34 +29,34 @@ describe CelluloidPubsub::Client::PubSubWorker do
     end
   end
 
-  describe '#parse_options' do
-    let(:actor) { mock }
-    let(:hostname) { '127.0.0.1' }
-    let(:port) { 9999 }
-    let(:path) { '/some_path' }
-    let(:custom_options) { { actor: actor, hostname: hostname, port: port, path: path } }
-
-    it 'parses options' do
-      @worker.parse_options(custom_options)
-      expect(@worker.actor).to eq(actor)
-      expect(@worker.hostname).to eq(hostname)
-      expect(@worker.port).to eq(port)
-      expect(@worker.path).to eq(path)
-    end
-
-    it 'sets defaults' do
-      @worker.parse_options({})
-      expect(@worker.actor).to eq(nil)
-      expect(@worker.hostname).to eq('0.0.0.0')
-      expect(@worker.port).to eq(1234)
-      expect(@worker.path).to eq('/ws')
-    end
-  end
+  # describe '#parse_options' do
+  #   let(:actor) { mock }
+  #   let(:hostname) { '127.0.0.1' }
+  #   let(:port) { 9999 }
+  #   let(:path) { '/some_path' }
+  #   let(:custom_options) { { actor: actor, hostname: hostname, port: port, path: path } }
+  #
+  #   it 'parses options' do
+  #     @worker.parse_options(custom_options)
+  #     expect(@worker.actor).to eq(actor)
+  #     expect(@worker.hostname).to eq(hostname)
+  #     expect(@worker.port).to eq(port)
+  #     expect(@worker.path).to eq(path)
+  #   end
+  #
+  #   it 'sets defaults' do
+  #     @worker.parse_options({})
+  #     expect(@worker.actor).to eq(nil)
+  #     expect(@worker.hostname).to eq('0.0.0.0')
+  #     expect(@worker.port).to eq(1234)
+  #     expect(@worker.path).to eq('/ws')
+  #   end
+  # end
 
   describe '#debug_enabled?' do
     it 'checks if debug is enabled' do
       act = @worker.debug_enabled?
-      expect(act).to eq(true)
+      expect(act).to eq(false)
     end
   end
 
@@ -87,14 +78,14 @@ describe CelluloidPubsub::Client::PubSubWorker do
     end
 
     it 'checks the message and returns true' do
-      message.expects(:present?).returns(true)
+      message.expects(:is_a?).with(Hash).returns(true)
       message.stubs(:[]).with('client_action').returns('successful_subscription')
       actual = @worker.succesfull_subscription?(message)
       expect(actual).to eq(true)
     end
 
     it 'checks the message and returns false' do
-      message.expects(:present?).returns(true)
+      message.expects(:is_a?).with(Hash).returns(true)
       message.stubs(:[]).with('client_action').returns('something_else')
       actual = @worker.succesfull_subscription?(message)
       expect(actual).to eq(false)
@@ -105,7 +96,7 @@ describe CelluloidPubsub::Client::PubSubWorker do
     let(:channel) { 'some_channel' }
     let(:data) { 'some_message' }
     it 'chats with the server' do
-      @worker.expects(:chat).with('client_action' => 'publish', 'channel' => channel, 'data' => data)
+      @worker.expects(:send_action).with('publish', channel, data)
       @worker.publish(channel, data)
     end
   end
@@ -132,12 +123,11 @@ describe CelluloidPubsub::Client::PubSubWorker do
 
   describe '#on_close' do
     let(:channel) { 'some_channel' }
-    let(:code) { 'some_message' }
-    let(:reason) { 'some reason' }
+    let(:code) { 'some_code' }
+    let(:reason) { 'some_reason' }
 
     it 'chats with the server' do
-      @worker.client.expects(:terminate)
-      @worker.actor.expects(:on_close).with(code, reason)
+      actor.expects(:on_close).with(code, reason).returns(true)
       @worker.on_close(code, reason)
     end
   end
@@ -149,12 +139,12 @@ describe CelluloidPubsub::Client::PubSubWorker do
     let(:json) { { action: 'message', message: data } }
     it 'chats witout hash' do
       JSON.expects(:dump).with(json).returns(json)
-      @worker.client.expects(:text).with(json)
+      connection.expects(:text).with(json)
       @worker.send(:chat, data)
     end
 
     it 'chats with a hash' do
-      @worker.client.expects(:text).with(data_hash.to_json)
+      connection.expects(:text).with(data_hash.to_json)
       @worker.send(:chat, data_hash)
     end
   end
