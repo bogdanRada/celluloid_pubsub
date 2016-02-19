@@ -16,7 +16,7 @@ module CelluloidPubsub
 
     def log_error(exception)
       message = format_error(exception)
-      log_debug(message, log_method: 'fatal')
+      log_debug(message)
     end
 
 
@@ -71,7 +71,7 @@ module CelluloidPubsub
     def setup_celluloid_exception_handler
       Celluloid.task_class = Celluloid::TaskThread
       Celluloid.exception_handler do |ex|
-        log_error(ex) if respond_to?(:debug_enabled?) && debug_enabled? && !filtered_error?(ex)
+        puts ex unless filtered_error?(ex)
       end
     end
 
@@ -120,8 +120,8 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api private
-    def log_debug(message, options = {})
-      Celluloid.logger.send(options.fetch(:log_method, 'debug'), message) if respond_to?(:debug_enabled?) && debug_enabled?
+    def log_debug(message)
+      debug message # if respond_to?(:debug_enabled?) && debug_enabled?
     end
   end
 end

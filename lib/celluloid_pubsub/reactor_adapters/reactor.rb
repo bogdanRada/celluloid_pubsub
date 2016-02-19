@@ -59,6 +59,7 @@ module CelluloidPubsub
       loop do
         break if !Actor.current.alive? || @websocket.closed? || !@server.alive?
         message = try_read_websocket
+        log_debug "#{self.class} Read Raw Message #{message}"
         handle_websocket_message(message) if message.present?
       end
     end

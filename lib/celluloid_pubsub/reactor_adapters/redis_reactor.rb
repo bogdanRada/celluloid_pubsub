@@ -1,6 +1,7 @@
 gem 'em-hiredis', '~> 0.3'
 require 'em-hiredis'
 
+require_relative '../classes/registry'
 require_relative './reactor'
 require_relative '../helpers/application_helper'
 module CelluloidPubsub
