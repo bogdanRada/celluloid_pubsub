@@ -1,5 +1,5 @@
 # encoding:utf-8
-
+require 'celluloid_pubsub/reactor_adapters/reactor'
 require 'spec_helper'
 
 describe CelluloidPubsub::Reactor do

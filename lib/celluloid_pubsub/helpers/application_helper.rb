@@ -121,7 +121,7 @@ module CelluloidPubsub
     #
     # @api private
     def log_debug(message, options = {})
-      Celuloid.logger.send(options.fetch(:log_method, 'debug'), message) if respond_to?(:debug_enabled?) && debug_enabled?
+      Celluloid.logger.send(options.fetch(:log_method, 'debug'), message) if respond_to?(:debug_enabled?) && debug_enabled?
     end
   end
 end
