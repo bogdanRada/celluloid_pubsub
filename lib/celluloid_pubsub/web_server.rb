@@ -49,7 +49,7 @@ module CelluloidPubsub
     end
 
     def run
-      @spy = Celluloid.logger
+      @spy = Celluloid.logger if spy
       loop { async.handle_connection @server.accept }
     end
 
