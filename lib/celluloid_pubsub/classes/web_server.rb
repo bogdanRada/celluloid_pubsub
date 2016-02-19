@@ -47,6 +47,11 @@ module CelluloidPubsub
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
 
+    def run
+      @spy = Celluloid.logger
+      loop { async.handle_connection @server.accept }
+    end
+
     # the method will  return true if redis can be used otherwise false
     #
     #
