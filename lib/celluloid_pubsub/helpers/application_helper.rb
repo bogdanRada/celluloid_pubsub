@@ -121,7 +121,7 @@ module CelluloidPubsub
     #
     # @api private
     def log_debug(message)
-      debug message # if respond_to?(:debug_enabled?) && debug_enabled?
+      debug message  if respond_to?(:debug_enabled?) && debug_enabled?
     end
   end
 end
