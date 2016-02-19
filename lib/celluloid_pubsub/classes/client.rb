@@ -1,4 +1,4 @@
-require_relative './helper'
+require_relative '../helpers/application_helper'
 module CelluloidPubsub
   # worker that subscribes to a channel or publishes to a channel
   # if it used to subscribe to a channel the worker will dispatch the messages to the actor that made the
@@ -15,7 +15,7 @@ module CelluloidPubsub
   class Client
     include Celluloid
     include Celluloid::Logger
-    include CelluloidPubsub::Helper
+    include CelluloidPubsub::ApplicationHelper
 
     attr_accessor :actor, :options, :channel
     finalizer :shutdown

@@ -1,5 +1,5 @@
-require_relative './registry'
-require_relative './helper'
+require_relative '../classes/registry'
+require_relative '../helpers/application_helper'
 module CelluloidPubsub
   # The reactor handles new connections. Based on what the client sends it either subscribes to a channel
   # or will publish to a channel or just dispatch to the server if command is neither subscribe, publish or unsubscribe
@@ -16,7 +16,7 @@ module CelluloidPubsub
     include Celluloid
     include Celluloid::IO
     include Celluloid::Logger
-    include CelluloidPubsub::Helper
+    include CelluloidPubsub::ApplicationHelper
 
     attr_accessor :websocket, :server, :channels
     finalizer :shutdown

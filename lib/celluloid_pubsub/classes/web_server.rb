@@ -1,5 +1,4 @@
-require_relative './reactor'
-require_relative './helper'
+require_relative '../helpers/application_helper'
 module CelluloidPubsub
   # webserver to which socket connects should connect to .
   # the server will dispatch each request into a new Reactor
@@ -15,7 +14,7 @@ module CelluloidPubsub
   #   @return [Hash] The hostname on which the webserver runs on
   class WebServer < Reel::Server::HTTP
     include Celluloid::Logger
-    include CelluloidPubsub::Helper
+    include CelluloidPubsub::ApplicationHelper
 
     # The hostname on which the webserver runs on by default
     HOST = '0.0.0.0'
@@ -184,6 +183,10 @@ module CelluloidPubsub
       end
     end
 
+    def adapters_directory
+      File.expand_path(File.join(File.dirname(__FILE__), '..', 'reactor_adapters'))
+    end
+
     #  returns the reactor class that will handle the connection depending if redis is enabled or not
     # @see #redis_enabled?
     #
@@ -191,7 +194,13 @@ module CelluloidPubsub
     #
     # @api public
     def reactor_class
-      redis_enabled? ? CelluloidPubsub::RedisReactor : CelluloidPubsub::Reactor
+      if redis_enabled?
+        require_file_with_rescue(File.join(adapters_directory, 'redis_reactor'), 'em-hiredis')
+        CelluloidPubsub::RedisReactor
+      else
+        require_file_with_rescue(File.join(adapters_directory, 'reactor'))
+        CelluloidPubsub::Reactor
+      end
     end
 
     # method will instantiate a new reactor object, will link the reactor to the current actor and will dispatch the request to the reactor
@@ -206,6 +215,8 @@ module CelluloidPubsub
       reactor = reactor_class.new
       Actor.current.link reactor
       route_websocket(reactor, request.websocket)
+    rescue Gem::LoadError => e
+      puts e.message
     end
 
     #  HTTP connections are not accepted so this method will show 404 message "Not Found"

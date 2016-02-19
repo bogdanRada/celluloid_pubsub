@@ -1,5 +1,8 @@
+gem 'em-hiredis', '~> 0.3'
+require 'em-hiredis'
+
 require_relative './reactor'
-require_relative './helper'
+require_relative '../helpers/application_helper'
 module CelluloidPubsub
   # reactor used for redis pubsub
   # @!attribute connected
@@ -10,7 +13,7 @@ module CelluloidPubsub
     include Celluloid
     include Celluloid::IO
     include Celluloid::Logger
-    include CelluloidPubsub::Helper
+    include CelluloidPubsub::ApplicationHelper
 
     attr_accessor :connected, :connection
 

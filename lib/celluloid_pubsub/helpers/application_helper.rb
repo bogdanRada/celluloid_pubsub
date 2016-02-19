@@ -1,6 +1,6 @@
 module CelluloidPubsub
   # class that holds the options that are configurable for this gem
-  module Helper
+  module ApplicationHelper
     # checks if the message has the successfull subscription action
     #
     # @param [string] message The message that will be checked
@@ -12,8 +12,35 @@ module CelluloidPubsub
       message.is_a?(Hash) && message['client_action'] == 'successful_subscription'
     end
 
-  module_function
+    module_function
 
+    def log_error(exception)
+      message = format_error(exception)
+      log_debug(message, log_method: 'fatal')
+    end
+
+
+    # formats a exception to be displayed on screen
+    #
+    # @param  [Exception]  exception the exception that will be formatted and printed on screen
+    #
+    # @return [String]
+    #
+    # @api public
+    def format_error(exception)
+      message = "#{exception.class} (#{exception.respond_to?(:message) ? exception.message : exception.inspect}):\n"
+      message << exception.annoted_source_code.to_s if exception.respond_to?(:annoted_source_code)
+      message << '  ' << exception.backtrace.join("\n  ") if exception.respond_to?(:backtrace)
+      message
+    end
+
+    def require_file_with_rescue(file_path, adapter = 'classic')
+      begin
+        require file_path
+      rescue Gem::LoadError => e
+        raise Gem::LoadError, "Specified '#{adapter}' for CelluloidPubsub::Webserver adapter, but the gem is not loaded. Add `gem '#{e.name}'` to your Gemfile (and ensure its version is at the minimum required by CelluloidPubsub)."
+      end
+    end
     # method used to determine if a action is a subsribe action
     # @param [string] action The action that will be checked
     #
@@ -44,7 +71,7 @@ module CelluloidPubsub
     def setup_celluloid_exception_handler
       Celluloid.task_class = Celluloid::TaskThread
       Celluloid.exception_handler do |ex|
-        puts ex unless filtered_error?(ex)
+        log_error(ex) if respond_to?(:debug_enabled?) && debug_enabled? && !filtered_error?(ex)
       end
     end
 
@@ -93,8 +120,8 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api private
-    def log_debug(message)
-      debug message if respond_to?(:debug_enabled?) && debug_enabled?
+    def log_debug(message, options = {})
+      Celuloid.logger.send(options.fetch(:log_method, 'debug'), message) if respond_to?(:debug_enabled?) && debug_enabled?
     end
   end
 end

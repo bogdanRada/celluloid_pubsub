@@ -61,6 +61,12 @@ CelluloidPubsub::WebServer.supervise_as(:web_server,
  )
 ```
 
+Starting with version 0.6.0, CelluloidPubsub doesn't load **em-hiredis** gem by default. If you want to use the Redis connection, please add this to your Gemfile:
+
+```ruby
+   gem 'em-hiredis', '~> 0.3'
+```
+
 Creating a client is simple as doing this. If you provide the channel when you initialize the **CelluloidPubsub::Client** it will automatically start the subscription to that channel. But sometimes, you might want to subscribe at a later time, so you can just omit the channel when you initialize the client, and use instead **@client.subscribe('test_channel')**. After the subscription has started, the client must implement the method **on_message** and the **on_close** method (called when client disconnects from the channel). The method **on_message** will receive all incoming messages from the server. You can test if the subscription was successful by doing this **@client.succesfull_subscription?(message)**.
 
 ```ruby
