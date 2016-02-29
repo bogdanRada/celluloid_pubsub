@@ -12,7 +12,7 @@ describe CelluloidPubsub::Reactor do
     server.stubs(:async).returns(server)
     server.stubs(:handle_dispatched_message)
     server.stubs(:subscribers).returns({})
-    server.stubs(:redis_enabled?).returns(false)
+    server.stubs(:adapter).returns(CelluloidPubsub::WebServer::CLASSIC_ADAPTER)
     websocket.stubs(:read)
     websocket.stubs(:url)
     websocket.stubs(:close)
