@@ -22,6 +22,8 @@ module CelluloidPubsub
     PORT = 1234
     # The request path that the webserver accepts by default
     PATH = '/ws'
+      # The name of the default adapter
+    CLASSIC_ADAPTER = 'classic'
 
     attr_accessor :server_options, :subscribers
     finalizer :shutdown
@@ -47,14 +49,20 @@ module CelluloidPubsub
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
 
+    def run
+      @spy = Celluloid.logger if spy
+      loop { async.handle_connection @server.accept }
+    end
+
     # the method will  return true if redis can be used otherwise false
     #
     #
     # @return [Boolean]  return true if redis can be used otherwise false
     #
     # @api public
-    def use_redis
-      @use_redis = @server_options.fetch('use_redis', false)
+    def adapter
+      @adapter ||= @server_options.fetch('adapter', CelluloidPubsub::WebServer::CLASSIC_ADAPTER)
+      @adapter.present? ? @adapter : CelluloidPubsub::WebServer::CLASSIC_ADAPTER
     end
 
     # the method will return true if debug is enabled otherwise false
@@ -139,15 +147,6 @@ module CelluloidPubsub
       @backlog = @server_options.fetch('backlog', 1024)
     end
 
-    # the method will return true if redis is enabled otherwise false
-    #
-    #
-    # @return [Boolean] returns true if redis is enabled otherwise false
-    #
-    # @api public
-    def redis_enabled?
-      use_redis.to_s.downcase == 'true'
-    end
 
     #  callback that will execute when receiving new conections
     # If the connections is a websocket will call method {#route_websocket}
@@ -190,7 +189,7 @@ module CelluloidPubsub
     #
     # @api public
     def reactor_class
-      redis_enabled? ? CelluloidPubsub::RedisReactor : CelluloidPubsub::Reactor
+      adapter == CelluloidPubsub::WebServer::CLASSIC_ADAPTER ? CelluloidPubsub::Reactor : "CelluloidPubsub::#{adapter.camelize}Reactor".constantize
     end
 
     # method will instantiate a new reactor object, will link the reactor to the current actor and will dispatch the request to the reactor
