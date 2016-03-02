@@ -2,9 +2,9 @@ require_relative './helper'
 module CelluloidPubsub
   # base actor used for compatibility between celluloid versions
   module BaseActor
-    extend Helper
 
     class << self
+      include Helper
       attr_reader :config
 
       def included(base)
