@@ -267,7 +267,7 @@ module CelluloidPubsub
       return unless channel.present?
       add_subscriber_to_channel(channel, message)
       log_debug "#{self.class} subscribed to #{channel} with #{message}"
-      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json unless @server.redis_enabled?
+      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json if @server.adapter == CelluloidPubsub::WebServer::CLASSIC_ADAPTER
     end
 
     # this method will return a list of all subscribers to a particular channel or a empty array

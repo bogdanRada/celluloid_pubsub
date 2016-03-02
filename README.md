@@ -8,7 +8,7 @@ Description
 
 CelluloidPubsub is a simple ruby implementation of publish subscribe design patterns using celluloid actors and websockets, using Celluloid::Reel server
 
-Starting with version 0.4.0, Redis support was added [courtesy of em-hiredis](https://github.com/mloughran/em-hiredis)
+Starting with version 0.6.0, Redis support was moved into gem [celluloid_pubsub_redis_adapter](https://github.com/bogdanRada/celluloid_pubsub_redis_adapter)
 
 Requirements
 ------------
@@ -20,8 +20,7 @@ Requirements
 5.	[http >= 1.0.2](https://github.com/httprb/http)
 6.	[Celluloid-websocket-client = 0.0.1](https://github.com/jeremyd/celluloid-websocket-client)
 7.	[ActiveSuport >= 4.2.0](https://rubygems.org/gems/activesupport)
-8.	[em-hiredis >= 0.3.0](https://github.com/mloughran/em-hiredis)
-9.	[json >= 1.8.3](https://github.com/flori/json)
+8.	[json >= 1.8.3](https://github.com/flori/json)
 
 Compatibility
 -------------
@@ -51,7 +50,7 @@ Creating a websocket server is simple as doing this. This are all the options av
 ```ruby
 CelluloidPubsub::WebServer.supervise_as(:web_server,
   enable_debug: true, # if debug messages should be logged
-  use_redis: false ,  # if set to true, will instantiate a RedisReactor class to handle each connection, which requires Redis to be available. Otherwise will use a simple Reactor to handle the connections which  has no dependencies .
+  adapter: nil ,  # if set to nil, will instantiate a simple Reactor to handle the connections which  has no dependencies . Otherwise will try to use that adapter.  Please see [celluloid_pubsub_redis_adapter](https://github.com/bogdanRada/celluloid_pubsub_redis_adapter) for more details on using redis adapter
   log_file_path: "path/to/log_file.log", # The log file where all debugging information will be printed
   hostname: "0.0.0.0", # the hostname of the server.
   port: 1234, # the port on which the server will listen for connections
