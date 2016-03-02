@@ -47,7 +47,8 @@ end
 
 
 # class used for testing actions
-class TestActor < CelluloidPubsub::BaseActor
+class TestActor
+  include CelluloidPubsub::BaseActor
 end
 
-TestActor.supervise(as: :test_actor)
+CelluloidPubsub::BaseActor.setup_actor_supervision(TestActor, actor_name: :test_actor, args: { })
