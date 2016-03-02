@@ -3,12 +3,12 @@ AllCops:
     - washout_builder.gemspec
     - bin/**/*
     - Guardfile
-    - vendor/**/*
-    - examples/**/*
+    - vendor/**/**
+    - examples/**/**
 
 ClassLength:
   Max: 500
-  
+
 Documentation:
   Enabled: true
 

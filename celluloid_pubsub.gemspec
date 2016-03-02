@@ -16,8 +16,8 @@ Gem::Specification.new do |s|
   s.test_files = s.files.grep(/^(spec)/)
   s.require_paths = ['lib']
 
-  s.add_runtime_dependency 'celluloid', '~> 0.16', '~> 0.16.0' # TODO: upgrade to version 0.17 - work in progress
-  s.add_runtime_dependency 'celluloid-io', '~> 0.16', '>= 0.16.2'
+  s.add_runtime_dependency 'celluloid', '>= 0.16', '>= 0.16.0' # TODO: upgrade to version 0.17 - work in progress
+  s.add_runtime_dependency 'celluloid-io', '>= 0.16', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '~> 0.6', '>= 0.6.0'
   s.add_runtime_dependency 'http', '~> 1.0', '>= 1.0.2'
   s.add_runtime_dependency 'celluloid-websocket-client', '~> 0.0', '>= 0.0.1'

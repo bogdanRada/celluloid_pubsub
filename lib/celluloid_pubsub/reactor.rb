@@ -12,11 +12,8 @@ module CelluloidPubsub
   #
   # @!attribute channels
   #   @return [Array] array of channels to which the current reactor has subscribed to
-  class Reactor
-    include Celluloid
-    include Celluloid::IO
-    include Celluloid::Logger
-    include CelluloidPubsub::Helper
+  class Reactor 
+    include CelluloidPubsub::BaseActor
 
     attr_accessor :websocket, :server, :channels
     finalizer :shutdown
