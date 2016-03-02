@@ -8,10 +8,10 @@ module CelluloidPubsub
       attr_reader :config
 
       def included(base)
-        base.include Celluloid
-        base.include Celluloid::IO
-        base.include CelluloidPubsub::Helper
-        base.include config['logger_class']
+        base.send(:include, Celluloid)
+        base.send(:include, Celluloid::IO)
+        base.send(:include, CelluloidPubsub::Helper)
+        base.send(:include, config['logger_class'])
       end
 
       def config
