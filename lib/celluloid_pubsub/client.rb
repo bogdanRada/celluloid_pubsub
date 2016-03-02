@@ -13,9 +13,8 @@ module CelluloidPubsub
   # @!attribute channel
   #   @return [String] The channel to which the client will subscribe to
   class Client
-    include Celluloid
-    include Celluloid::Logger
-    include CelluloidPubsub::Helper
+    include CelluloidPubsub::BaseActor
+    
 
     attr_accessor :actor, :options, :channel
     finalizer :shutdown

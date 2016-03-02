@@ -14,8 +14,7 @@ module CelluloidPubsub
   # @!attribute subscribers
   #   @return [Hash] The hostname on which the webserver runs on
   class WebServer < Reel::Server::HTTP
-    include Celluloid::Logger
-    include CelluloidPubsub::Helper
+    include CelluloidPubsub::BaseActor
 
     # The hostname on which the webserver runs on by default
     HOST = '0.0.0.0'

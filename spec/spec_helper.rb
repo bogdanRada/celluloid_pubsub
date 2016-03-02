@@ -44,3 +44,10 @@ RSpec.configure do |config|
     end
   end
 end
+
+
+# class used for testing actions
+class TestActor < CelluloidPubsub::BaseActor
+end
+
+TestActor.supervise(as: :test_actor)
