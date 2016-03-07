@@ -40,7 +40,7 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @server.debug_enabled?
+      @server.present? && @server.alive? && @server.debug_enabled?
     end
 
     # reads from the socket the message
