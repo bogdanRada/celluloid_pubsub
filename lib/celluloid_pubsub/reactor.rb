@@ -12,7 +12,7 @@ module CelluloidPubsub
   #
   # @!attribute channels
   #   @return [Array] array of channels to which the current reactor has subscribed to
-  class Reactor 
+  class Reactor
     include CelluloidPubsub::BaseActor
 
     attr_accessor :websocket, :server, :channels
@@ -70,7 +70,7 @@ module CelluloidPubsub
     # :nocov:
     def try_read_websocket
       @websocket.closed? ? nil : @websocket.read
-    rescue Reel::SocketError
+    rescue
       nil
     end
 
