@@ -308,7 +308,7 @@ module CelluloidPubsub
     # @api public
     def publish_event(current_topic, message)
       return if current_topic.blank? || message.blank?
-      (@server.subscribers[current_topic].dup || []).each do |hash|
+      (@server.subscribers[current_topic].dup || []).pmap do |hash|
         hash[:reactor].websocket << message
       end
     rescue => exception
@@ -322,7 +322,7 @@ module CelluloidPubsub
     # @api public
     def unsubscribe_all
       log_debug "#{self.class} runs 'unsubscribe_all' method"
-      CelluloidPubsub::Registry.channels.dup.each do |channel|
+      CelluloidPubsub::Registry.channels.dup.pmap do |channel|
         unsubscribe_clients(channel)
       end
       log_debug 'clearing connections'
@@ -337,7 +337,7 @@ module CelluloidPubsub
     # @api public
     def unsubscribe_from_channel(channel)
       log_debug "#{self.class} runs 'unsubscribe_from_channel' method with #{channel}"
-      (@server.subscribers[channel].dup || []).each do |hash|
+      (@server.subscribers[channel].dup || []).pmap do |hash|
         reactor = hash[:reactor]
         reactor.websocket.close
         Celluloid::Actor.kill(reactor)
