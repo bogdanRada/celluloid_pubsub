@@ -19,10 +19,8 @@ Requirements
 2.	[Celluloid >= 0.16.0](https://github.com/celluloid/celluloid)
 3.	[Celluloid-IO >= 0.16.2](https://github.com/celluloid/celluloid-io)
 4.	[Reel >= 0.6.0](https://github.com/celluloid/reel)
-5.	[http >= 1.0.2](https://github.com/httprb/http)
-6.	[Celluloid-websocket-client = 0.0.1](https://github.com/jeremyd/celluloid-websocket-client)
-7.	[ActiveSuport >= 4.2.0](https://rubygems.org/gems/activesupport)
-8.	[json >= 1.8.3](https://github.com/flori/json)
+5.	[Celluloid-websocket-client = 0.0.1](https://github.com/jeremyd/celluloid-websocket-client)
+6.	[ActiveSuport >= 4.2.0](https://rubygems.org/gems/activesupport)
 
 Compatibility
 -------------
