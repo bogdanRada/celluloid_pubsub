@@ -68,5 +68,5 @@ Signal.trap('INT') do
   signal_received = true
 end
 
-puts 'Exited succesfully! =)'
 sleep 0.1 until signal_received
+puts 'Exited succesfully! =)'
