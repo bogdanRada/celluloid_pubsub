@@ -14,7 +14,7 @@ module CelluloidPubsub
   #   @return [String] The channel to which the client will subscribe to
   class Client
     include CelluloidPubsub::BaseActor
-    
+
 
     attr_accessor :actor, :options, :channel
     finalizer :shutdown
@@ -129,9 +129,9 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def subscribe(channel)
+    def subscribe(channel, data = {})
       log_debug("#{@actor.class} tries to subscribe to channel  #{channel}")
-      async.send_action('subscribe', channel)
+      async.send_action('subscribe', channel, data)
     end
 
     # publishes to a channel some data (can be anything)
