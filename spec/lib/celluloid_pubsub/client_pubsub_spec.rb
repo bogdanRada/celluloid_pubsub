@@ -115,8 +115,16 @@ describe CelluloidPubsub::Client do
     let(:data) { 'some_message' }
     it 'chats with the server' do
       JSON.expects(:parse).with(data).returns(data)
+       @worker.actor.expects(:respond_to?).returns(true)
       @worker.actor.expects(:async).returns(actor)
       @worker.actor.expects(:on_message).with(data)
+      @worker.on_message(data)
+    end
+
+    it 'chats with the server without async' do
+      JSON.expects(:parse).with(data).returns(data)
+       @worker.actor.expects(:respond_to?).returns(false)
+       @worker.actor.expects(:on_message).with(data)
       @worker.on_message(data)
     end
   end
