@@ -199,7 +199,11 @@ module CelluloidPubsub
     def on_message(data)
       message = JSON.parse(data)
       log_debug("#{@actor.class} received JSON  #{message}")
-      @actor.async.on_message(message)
+      if @actor.respond_to?(:async)
+        @actor.async.on_message(message)
+      else
+        @actor.on_message(message)
+      end
     end
 
     # callback executes when connection closes
@@ -215,7 +219,11 @@ module CelluloidPubsub
       connection.terminate
       terminate
       log_debug("#{@actor.class} dispatching on close  #{code} #{reason}")
-      @actor.async.on_close(code, reason)
+      if @actor.respond_to?(:async)
+        @actor.async.on_close(code, reason)
+      else
+        @actor.on_close(code, reason)
+      end
     end
 
   private
