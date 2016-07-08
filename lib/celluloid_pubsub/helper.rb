@@ -71,7 +71,7 @@ module CelluloidPubsub
     #
     # @api private
     def setup_celluloid_exception_handler
-      Celluloid.task_class = Celluloid::TaskThread
+      Celluloid.task_class = defined?(Celluloid::TaskThread) ? Celluloid::TaskThread : Celluloid::Task::Threaded
       Celluloid.exception_handler do |ex|
         puts ex unless filtered_error?(ex)
       end

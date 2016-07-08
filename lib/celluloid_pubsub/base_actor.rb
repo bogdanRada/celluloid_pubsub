@@ -33,7 +33,7 @@ module CelluloidPubsub
       end
 
       def version_less_than_seventeen?
-        verify_gem_version('celluloid', '0.17', operator: '<')
+        verify_gem_version(celluloid_version, '0.17', operator: '<')
       end
 
       def setup_actor_supervision(class_name, options)
