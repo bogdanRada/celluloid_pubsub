@@ -5,6 +5,8 @@ require 'spec_helper'
 describe CelluloidPubsub::Reactor do
   let(:websocket) { mock }
   let(:server) { mock }
+  let(:mutex) { mock }
+  let(:synchronizer) { mock }
 
   before(:each) do
     subject.stubs(:async).returns(subject)
@@ -22,6 +24,8 @@ describe CelluloidPubsub::Reactor do
     subject.stubs(:run)
     subject.work(websocket, server)
     subject.stubs(:unsubscribe_from_channel).returns(true)
+    server.stubs(:mutex).returns(mutex)
+    mutex.stubs(:synchronize).yields(server)
     Celluloid::Actor.stubs(:kill).returns(true)
   end
 
@@ -140,14 +144,14 @@ describe CelluloidPubsub::Reactor do
       subject.channels.stubs(:blank?).returns(false)
       subject.channels.expects(:delete).with(channel)
       act = subject.unsubscribe(channel)
-      expect(act).to eq([])
+      expect(act).to eq(nil)
     end
 
     it 'unsubscribes' do
       subject.channels.stubs(:blank?).returns(true)
       subject.websocket.expects(:close)
       act = subject.unsubscribe(channel)
-      expect(act).to eq([])
+      expect(act).to eq(nil)
     end
 
     it 'unsubscribes' do

@@ -49,6 +49,9 @@ end
 # class used for testing actions
 class TestActor
   include CelluloidPubsub::BaseActor
+
+  def initialize(*args)
+  end
 end
 
 CelluloidPubsub::BaseActor.setup_actor_supervision(TestActor, actor_name: :test_actor, args: { })
