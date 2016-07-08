@@ -165,18 +165,18 @@ module CelluloidPubsub
     def delegate_action(json_data)
       channel = json_data.fetch('channel', nil)
       case json_data['client_action']
-        when 'unsubscribe_all'
-          unsubscribe_all
-        when 'unsubscribe_clients'
-          async.unsubscribe_clients(channel)
-        when 'unsubscribe'
-          async.unsubscribe(channel)
-        when 'subscribe'
-          async.start_subscriber(channel, json_data)
-        when 'publish'
-          async.publish_event(channel, json_data['data'].to_json)
-        else
-          handle_unknown_action(json_data)
+      when 'unsubscribe_all'
+        unsubscribe_all
+      when 'unsubscribe_clients'
+        async.unsubscribe_clients(channel)
+      when 'unsubscribe'
+        async.unsubscribe(channel)
+      when 'subscribe'
+        async.start_subscriber(channel, json_data)
+      when 'publish'
+        async.publish_event(channel, json_data['data'].to_json)
+      else
+        handle_unknown_action(json_data)
       end
     end
 
@@ -221,8 +221,10 @@ module CelluloidPubsub
       log_debug "#{self.class} runs 'unsubscribe' method with  #{channel}"
       return unless channel.present?
       forget_channel(channel)
-      (@server.subscribers[channel] || []).delete_if do |hash|
-        hash[:reactor] == Actor.current
+      @server.mutex.synchronize do
+        (@server.subscribers[channel].dup || []).delete_if do |hash|
+          hash[:reactor] == Actor.current
+        end
       end
     end
 
@@ -295,7 +297,9 @@ module CelluloidPubsub
       registry_channels = CelluloidPubsub::Registry.channels
       @channels << channel
       registry_channels << channel unless registry_channels.include?(channel)
-      @server.subscribers[channel] = channel_subscribers(channel).push(reactor: Actor.current, message: message)
+      @server.mutex.synchronize do
+        @server.subscribers[channel] = channel_subscribers(channel).push(reactor: Actor.current, message: message)
+      end
     end
 
     #  method for publishing data to a channel
@@ -308,8 +312,11 @@ module CelluloidPubsub
     # @api public
     def publish_event(current_topic, message)
       return if current_topic.blank? || message.blank?
-      (@server.subscribers[current_topic].dup || []).pmap do |hash|
-        hash[:reactor].websocket << message
+      log_debug "#{self.class} tries to publish  to #{current_topic} with #{message} into subscribers #{@server.subscribers[current_topic].inspect}"
+      @server.mutex.synchronize do
+        (@server.subscribers[current_topic].dup || []).pmap do |hash|
+          hash[:reactor].websocket << message
+        end
       end
     rescue => exception
       log_debug("could not publish message #{message} into topic #{current_topic} because of #{exception.inspect}")
@@ -337,10 +344,12 @@ module CelluloidPubsub
     # @api public
     def unsubscribe_from_channel(channel)
       log_debug "#{self.class} runs 'unsubscribe_from_channel' method with #{channel}"
-      (@server.subscribers[channel].dup || []).pmap do |hash|
-        reactor = hash[:reactor]
-        reactor.websocket.close
-        Celluloid::Actor.kill(reactor)
+      @server.mutex.synchronize do
+        (@server.subscribers[channel].dup || []).pmap do |hash|
+          reactor = hash[:reactor]
+          reactor.websocket.close
+          Celluloid::Actor.kill(reactor)
+        end
       end
     end
   end

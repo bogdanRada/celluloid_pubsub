@@ -25,7 +25,7 @@ module CelluloidPubsub
       # The name of the default adapter
     CLASSIC_ADAPTER = 'classic'
 
-    attr_accessor :server_options, :subscribers
+    attr_accessor :server_options, :subscribers, :mutex
     finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
@@ -44,6 +44,7 @@ module CelluloidPubsub
       Celluloid.boot unless Celluloid.running?
       @server_options = parse_options(options)
       @subscribers = {}
+      @mutex = Mutex.new
       setup_celluloid_logger
       log_debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
