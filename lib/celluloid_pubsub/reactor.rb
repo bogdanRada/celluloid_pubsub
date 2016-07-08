@@ -222,7 +222,7 @@ module CelluloidPubsub
       return unless channel.present?
       forget_channel(channel)
       @server.mutex.synchronize do
-        (@server.subscribers[channel].dup || []).delete_if do |hash|
+        (@server.subscribers[channel] || []).delete_if do |hash|
           hash[:reactor] == Actor.current
         end
       end
