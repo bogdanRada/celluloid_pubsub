@@ -231,13 +231,13 @@ module CelluloidPubsub
     #
     # @api public
     def route_websocket(reactor, socket)
-      url = socket.url
-      if url == path
+       url = socket.url
+       if url == path || url == "/?"
         reactor.async.work(socket, Actor.current)
-      else
-        log_debug "Received invalid WebSocket request for: #{url}"
-        socket.close
-      end
+       else
+         log_debug "Received invalid WebSocket request for: #{url}"
+         socket.close
+       end
     end
 
     # If the message can be parsed into a Hash it will respond to the reactor's websocket connection with the same message in JSON format

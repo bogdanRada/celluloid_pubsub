@@ -312,7 +312,6 @@ module CelluloidPubsub
     # @api public
     def publish_event(current_topic, message)
       return if current_topic.blank? || message.blank?
-      log_debug "#{self.class} tries to publish  to #{current_topic} with #{message} into subscribers #{@server.subscribers[current_topic].inspect}"
       @server.mutex.synchronize do
         (@server.subscribers[current_topic].dup || []).pmap do |hash|
           hash[:reactor].websocket << message
