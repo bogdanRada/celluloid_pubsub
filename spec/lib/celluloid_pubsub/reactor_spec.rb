@@ -19,7 +19,7 @@ describe CelluloidPubsub::Reactor do
     websocket.stubs(:url)
     websocket.stubs(:close)
     websocket.stubs(:closed?).returns(false)
-    server.stubs(:alive?).returns(true)
+    server.stubs(:dead?).returns(false)
     subject.stubs(:inspect).returns(subject)
     subject.stubs(:run)
     subject.work(websocket, server)

@@ -8,10 +8,6 @@ describe CelluloidPubsub::WebServer do
   end
 
   it 'should have host constant' do
-    expect(CelluloidPubsub::WebServer::PORT).to eq(1234)
-  end
-
-  it 'should have host constant' do
     expect(CelluloidPubsub::WebServer::PATH).to eq('/ws')
   end
   let(:options) { {} }
