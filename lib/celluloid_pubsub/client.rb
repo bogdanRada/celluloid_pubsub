@@ -88,7 +88,7 @@ module CelluloidPubsub
     #
     # @api public
     def port
-      @port ||= @options.fetch('port', CelluloidPubsub::WebServer::PORT)
+      @port ||= @options.fetch('port', nil) ||  CelluloidPubsub::WebServer.find_unused_port
     end
 
     # the method will return the path of the URL on which the servers acccepts the connection

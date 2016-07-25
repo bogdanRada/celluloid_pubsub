@@ -8,6 +8,8 @@ Description
 
 CelluloidPubsub is a simple ruby implementation of publish subscribe design patterns using celluloid actors and websockets, using Celluloid::Reel server
 
+**Starting with version 0.9.0, the webserver will automatically detect an unused port instead of trying to connect by default to 1234 port. This solves some issues when this port is already used.**
+
 Starting with version 0.7.0, Support for Celluloid 0.17 has been added.
 
 Starting with version 0.6.0, Redis support was moved into gem [celluloid_pubsub_redis_adapter](https://github.com/bogdanRada/celluloid_pubsub_redis_adapter)

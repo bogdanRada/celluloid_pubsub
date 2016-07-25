@@ -18,8 +18,6 @@ module CelluloidPubsub
 
     # The hostname on which the webserver runs on by default
     HOST = '0.0.0.0'
-    # The port on which the webserver runs on by default
-    PORT = 1234
     # The request path that the webserver accepts by default
     PATH = '/ws'
       # The name of the default adapter
@@ -46,10 +44,44 @@ module CelluloidPubsub
       @subscribers = {}
       @mutex = Mutex.new
       setup_celluloid_logger
-      log_debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
+      debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
 
+    # the method will  return the socket conection opened on the unused port
+    #
+    #
+    # @return [TCPServer]  return the socket connection opened on a random port
+    #
+    # @api public
+    def self.open_socket_on_unused_port
+      infos = ::Socket::getaddrinfo("localhost", nil, Socket::AF_UNSPEC, Socket::SOCK_STREAM, 0, Socket::AI_PASSIVE)
+      families = Hash[*infos.collect { |af, *_| af }.uniq.zip([]).flatten]
+
+      return ::TCPServer.open('0.0.0.0', 0) if families.has_key?('AF_INET')
+      return ::TCPServer.open('::', 0) if families.has_key?('AF_INET6')
+      return ::TCPServer.open(0)
+    end
+
+    # the method get from the socket connection that is already opened the port used.
+    # @see #open_socket_on_unused_port
+    #
+    # @return [Integer]  returns the port that can be used to issue new connection
+    #
+    # @api public
+    def self.find_unused_port
+      @@unused_port ||= begin
+        socket = open_socket_on_unused_port
+        port = socket.addr[1]
+        socket.close
+        port
+      end
+    end
+
+    # this method is overriden from the Reel::Server::HTTP in order to set the spy to the celluloid logger
+    # before the connection is accepted.
+    # @see #handle_connection
+    # @api public
     def run
       @spy = Celluloid.logger if spy
       loop { async.handle_connection @server.accept }
@@ -115,7 +147,7 @@ module CelluloidPubsub
     #
     # @api public
     def port
-      @port = @server_options.fetch('port', CelluloidPubsub::WebServer::PORT)
+      @port ||= @server_options.fetch('port', nil) || self.class.find_unused_port
     end
 
     # the method will return the URL path on which will acceept connections
