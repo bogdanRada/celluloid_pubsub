@@ -40,7 +40,7 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @server.present? && @server.alive? && @server.debug_enabled?
+      !@server.dead? && @server.debug_enabled?
     end
 
     # reads from the socket the message
@@ -54,7 +54,7 @@ module CelluloidPubsub
     # :nocov:
     def run
       loop do
-        break if !Actor.current.alive? || @websocket.closed? || !@server.alive?
+        break if Actor.current.dead? || @websocket.closed? || @server.dead?
         message = try_read_websocket
         handle_websocket_message(message) if message.present?
       end
