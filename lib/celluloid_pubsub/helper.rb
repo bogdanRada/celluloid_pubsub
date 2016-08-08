@@ -1,3 +1,5 @@
+# encoding: utf-8
+# frozen_string_literal: true
 module CelluloidPubsub
   # class that holds the options that are configurable for this gem
   module Helper
@@ -12,7 +14,7 @@ module CelluloidPubsub
       message.is_a?(Hash) && message['client_action'] == 'successful_subscription'
     end
 
-    module_function
+  module_function
 
     def find_loaded_gem(name, property = nil)
       gem_spec = Gem.loaded_specs.values.find { |repo| repo.name == name }

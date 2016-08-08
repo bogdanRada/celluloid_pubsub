@@ -1,11 +1,16 @@
 AllCops:
   Exclude:
-    - washout_builder.gemspec
+    - celluloid_pubsub.gemspec
     - bin/**/*
     - Guardfile
     - vendor/**/**
     - examples/**/**
+    - spec/**/*
+    - Gemfile
+    - Rakefile
 
+  TargetRubyVersion: 2.3
+  
 ClassLength:
   Max: 500
 

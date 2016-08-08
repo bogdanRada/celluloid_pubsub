@@ -1,10 +1,12 @@
+# encoding: utf-8
+# frozen_string_literal: true
 require_relative './helper'
 module CelluloidPubsub
   # base actor used for compatibility between celluloid versions
   module BaseActor
-
     class << self
       include Helper
+
       attr_reader :config
 
       def included(base)
@@ -31,7 +33,7 @@ module CelluloidPubsub
       def celluloid_version
         find_loaded_gem_property('celluloid', 'version')
       end
-
+      
       def version_less_than_seventeen?
         verify_gem_version(celluloid_version, '0.17', operator: '<')
       end
@@ -43,7 +45,6 @@ module CelluloidPubsub
           class_name.supervise(as: options[:actor_name], args: [options[:args]].compact)
         end
       end
-
     end
   end
 end

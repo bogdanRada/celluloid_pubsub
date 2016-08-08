@@ -1,3 +1,5 @@
+# encoding: utf-8
+# frozen_string_literal: true
 require_relative './registry'
 require_relative './helper'
 module CelluloidPubsub
@@ -165,18 +167,18 @@ module CelluloidPubsub
     def delegate_action(json_data)
       channel = json_data.fetch('channel', nil)
       case json_data['client_action']
-      when 'unsubscribe_all'
-        unsubscribe_all
-      when 'unsubscribe_clients'
-        async.unsubscribe_clients(channel)
-      when 'unsubscribe'
-        async.unsubscribe(channel)
-      when 'subscribe'
-        async.start_subscriber(channel, json_data)
-      when 'publish'
-        async.publish_event(channel, json_data['data'].to_json)
-      else
-        handle_unknown_action(json_data)
+        when 'unsubscribe_all'
+          unsubscribe_all
+        when 'unsubscribe_clients'
+          async.unsubscribe_clients(channel)
+        when 'unsubscribe'
+          async.unsubscribe(channel)
+        when 'subscribe'
+          async.start_subscriber(channel, json_data)
+        when 'publish'
+          async.publish_event(channel, json_data['data'].to_json)
+        else
+          handle_unknown_action(json_data)
       end
     end
 
