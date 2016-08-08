@@ -9,3 +9,4 @@ UtilityFunction:
   enabled: false
 exclude_paths:
   - examples
+  - spec
