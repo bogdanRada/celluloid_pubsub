@@ -33,7 +33,7 @@ module CelluloidPubsub
       def celluloid_version
         find_loaded_gem_property('celluloid', 'version')
       end
-      
+
       def version_less_than_seventeen?
         verify_gem_version(celluloid_version, '0.17', operator: '<')
       end
