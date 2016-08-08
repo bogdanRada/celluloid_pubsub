@@ -72,7 +72,7 @@ module CelluloidPubsub
     #
     # @api public
     def self.find_unused_port
-      @unused_port ||= begin
+      @@unused_port ||= begin
         socket = open_socket_on_unused_port
         port = socket.addr[1]
         socket.close
