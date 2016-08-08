@@ -1,3 +1,5 @@
+# encoding: utf-8
+# frozen_string_literal: true
 require_relative './helper'
 module CelluloidPubsub
   # worker that subscribes to a channel or publishes to a channel
@@ -14,7 +16,6 @@ module CelluloidPubsub
   #   @return [String] The channel to which the client will subscribe to
   class Client
     include CelluloidPubsub::BaseActor
-
 
     attr_accessor :actor, :options, :channel
     finalizer :shutdown
@@ -88,7 +89,7 @@ module CelluloidPubsub
     #
     # @api public
     def port
-      @port ||= @options.fetch('port', nil) ||  CelluloidPubsub::WebServer.find_unused_port
+      @port ||= @options.fetch('port', nil) || CelluloidPubsub::WebServer.find_unused_port
     end
 
     # the method will return the path of the URL on which the servers acccepts the connection
@@ -253,12 +254,7 @@ module CelluloidPubsub
     #
     # @api private
     def chat(message)
-      final_message = nil
-      if message.is_a?(Hash)
-        final_message = message.to_json
-      else
-        final_message = JSON.dump(action: 'message', message: message)
-      end
+      final_message = message.is_a?(Hash) ? message.to_json : JSON.dump(action: 'message', message: message)
       log_debug("#{@actor.class} sends JSON #{final_message}")
       connection.text final_message
     end
