@@ -39,10 +39,11 @@ module CelluloidPubsub
       end
 
       def setup_actor_supervision(class_name, options)
+        actor_name, args = [options[:actor_name], options[:args]]
         if version_less_than_seventeen?
-          class_name.supervise_as(options[:actor_name], options[:args])
+          class_name.supervise_as(actor_name, args)
         else
-          class_name.supervise(as: options[:actor_name], args: [options[:args]].compact)
+          class_name.supervise(as: actor_name, args: [args].compact)
         end
       end
     end
