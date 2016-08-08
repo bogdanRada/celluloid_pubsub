@@ -71,6 +71,7 @@ module CelluloidPubsub
     # @return [Integer]  returns the port that can be used to issue new connection
     #
     # @api public
+    # rubocop:disable ClassVars
     def self.find_unused_port
       @@unused_port ||= begin
         socket = open_socket_on_unused_port
@@ -79,6 +80,7 @@ module CelluloidPubsub
         port
       end
     end
+    # rubocop:enable ClassVars
 
     # this method is overriden from the Reel::Server::HTTP in order to set the spy to the celluloid logger
     # before the connection is accepted.
