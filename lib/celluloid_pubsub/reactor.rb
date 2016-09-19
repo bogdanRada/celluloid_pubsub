@@ -17,6 +17,7 @@ module CelluloidPubsub
   class Reactor
     include CelluloidPubsub::BaseActor
 
+    # available actions that can be delegated
     AVAILABLE_ACTIONS = %w(unsubscribe_clients unsubscribe subscribe publish unsubscribe_all).freeze
 
     # The websocket connection received from the server
@@ -319,7 +320,7 @@ module CelluloidPubsub
     #  method for publishing data to a channel
     #
     # @param [String] current_topic The Channel to which the reactor instance {CelluloidPubsub::Reactor} will publish the message to
-    # @param [Object] message
+    # @param [Object] json_data The additional data that contains the message that needs to be sent
     #
     # @return [void]
     #
@@ -334,7 +335,8 @@ module CelluloidPubsub
 
     # the method will publish to all subsribers of a channel a message
     #
-    # @param [String] channel
+    # @param [String] current_topic
+    # @param [#to_s] message
     #
     # @return [void]
     #
@@ -348,6 +350,9 @@ module CelluloidPubsub
     end
 
     # unsubscribes all actors from all channels and terminates the curent actor
+    #
+    # @param [String] _channel NOT USED - needed to maintain compatibility with the other methods
+    # @param [Object] _json_data NOT USED - needed to maintain compatibility with the other methods
     #
     # @return [void]
     #
