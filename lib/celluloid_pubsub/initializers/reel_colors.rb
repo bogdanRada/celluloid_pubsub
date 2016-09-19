@@ -1,8 +1,10 @@
+# encoding: utf-8
+# frozen_string_literal: true
 require 'reel/spy'
 Reel::Spy::Colors.class_eval do
   alias_method :original_colorize, :colorize
 
-  def colorize(n, str)
+  def colorize(_n, str)
     force_utf8_encoding(str)
   end
 

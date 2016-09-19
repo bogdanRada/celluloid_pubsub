@@ -15,10 +15,10 @@ class FirstActor
 
   def on_message(message)
     if @client.succesfull_subscription?(message)
-      puts "subscriber got successful subscription #{message.inspect}"
+      puts "subscriber got successful subscription #{message}"
       @client.publish('test_channel2', 'data' => ' subscriber got successfull subscription') # the message needs to be a Hash
     else
-      puts "subscriber got message #{message.inspect}"
+      puts "subscriber got message #{message}"
     end
   end
 
@@ -40,10 +40,10 @@ class SecondActor
 
   def on_message(message)
     if @client.succesfull_subscription?(message)
-      puts "publisher got successful subscription #{message.inspect}"
+      puts "publisher got successful subscription #{message}"
       @client.publish('test_channel', 'data' => ' my_message') # the message needs to be a Hash
     else
-      puts "publisher got message #{message.inspect}"
+      puts "publisher got message #{message}"
     end
   end
 

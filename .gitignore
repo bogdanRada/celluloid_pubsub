@@ -17,3 +17,4 @@ tags
 .yardoc/
 doc/
 bin/
+gemfiles/*.lock

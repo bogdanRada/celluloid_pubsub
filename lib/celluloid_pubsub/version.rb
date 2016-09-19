@@ -1,3 +1,5 @@
+# encoding: utf-8
+# frozen_string_literal: true
 # Returns the version of the gem  as a <tt>Gem::Version</tt>
 module CelluloidPubsub
   #  it prints the gem version as a string

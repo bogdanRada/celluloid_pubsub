@@ -1,3 +1,5 @@
+# encoding: utf-8
+# frozen_string_literal: true
 require_relative './registry'
 require_relative './helper'
 module CelluloidPubsub
@@ -15,7 +17,21 @@ module CelluloidPubsub
   class Reactor
     include CelluloidPubsub::BaseActor
 
-    attr_accessor :websocket, :server, :channels
+    # available actions that can be delegated
+    AVAILABLE_ACTIONS = %w(unsubscribe_clients unsubscribe subscribe publish unsubscribe_all).freeze
+
+    # The websocket connection received from the server
+    # @return [Reel::WebSocket] websocket connection
+    attr_accessor :websocket
+
+    # The server instance to which this reactor is linked to
+    # @return [CelluloidPubsub::Webserver] the server actor to which the reactor is connected to
+    attr_accessor :server
+
+    # The channels to which this reactor has subscribed to
+    # @return [Array] array of channels to which the current reactor has subscribed to
+    attr_accessor :channels
+
     finalizer :shutdown
     #  rececives a new socket connection from the server
     #  and listens for messages
@@ -163,21 +179,9 @@ module CelluloidPubsub
     #
     # @api public
     def delegate_action(json_data)
-      channel = json_data.fetch('channel', nil)
-      case json_data['client_action']
-      when 'unsubscribe_all'
-        unsubscribe_all
-      when 'unsubscribe_clients'
-        async.unsubscribe_clients(channel)
-      when 'unsubscribe'
-        async.unsubscribe(channel)
-      when 'subscribe'
-        async.start_subscriber(channel, json_data)
-      when 'publish'
-        async.publish_event(channel, json_data['data'].to_json)
-      else
-        handle_unknown_action(json_data)
-      end
+      channel, client_action = json_data.slice('channel', 'client_action').values
+      return unless CelluloidPubsub::Reactor::AVAILABLE_ACTIONS.include?(client_action)
+      async.send(client_action, channel, json_data)
     end
 
     # the method will delegate the message to the server in an asyncronous way by sending the current actor and the message
@@ -188,8 +192,8 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def handle_unknown_action(json_data)
-      log_debug "Trying to dispatch   to server  #{json_data}"
+    def handle_unknown_action(channel, json_data)
+      log_debug "Trying to dispatch   to server  #{json_data} on channel #{channel}"
       @server.async.handle_dispatched_message(Actor.current, json_data)
     end
 
@@ -217,10 +221,21 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def unsubscribe(channel)
+    def unsubscribe(channel, _json_data)
       log_debug "#{self.class} runs 'unsubscribe' method with  #{channel}"
       return unless channel.present?
       forget_channel(channel)
+      delete_server_subscribers(channel)
+    end
+
+    # the method will delete the reactor from the channel list on the server
+    #
+    # @param [String] channel
+    #
+    # @return [void]
+    #
+    # @api public
+    def delete_server_subscribers(channel)
       @server.mutex.synchronize do
         (@server.subscribers[channel] || []).delete_if do |hash|
           hash[:reactor] == Actor.current
@@ -235,7 +250,7 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def unsubscribe_clients(channel)
+    def unsubscribe_clients(channel, _json_data)
       log_debug "#{self.class} runs 'unsubscribe_clients' method with  #{channel}"
       return if channel.blank?
       unsubscribe_from_channel(channel)
@@ -265,7 +280,7 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def start_subscriber(channel, message)
+    def subscribe(channel, message)
       return unless channel.present?
       add_subscriber_to_channel(channel, message)
       log_debug "#{self.class} subscribed to #{channel} with #{message}"
@@ -305,28 +320,44 @@ module CelluloidPubsub
     #  method for publishing data to a channel
     #
     # @param [String] current_topic The Channel to which the reactor instance {CelluloidPubsub::Reactor} will publish the message to
-    # @param [Object] message
+    # @param [Object] json_data The additional data that contains the message that needs to be sent
     #
     # @return [void]
     #
     # @api public
-    def publish_event(current_topic, message)
+    def publish(current_topic, json_data)
+      message = json_data['data'].to_json
       return if current_topic.blank? || message.blank?
+      server_pusblish_event(current_topic, message)
+    rescue => exception
+      log_debug("could not publish message #{message} into topic #{current_topic} because of #{exception.inspect}")
+    end
+
+    # the method will publish to all subsribers of a channel a message
+    #
+    # @param [String] current_topic
+    # @param [#to_s] message
+    #
+    # @return [void]
+    #
+    # @api public
+    def server_pusblish_event(current_topic, message)
       @server.mutex.synchronize do
         (@server.subscribers[current_topic].dup || []).pmap do |hash|
           hash[:reactor].websocket << message
         end
       end
-    rescue => exception
-      log_debug("could not publish message #{message} into topic #{current_topic} because of #{exception.inspect}")
     end
 
     # unsubscribes all actors from all channels and terminates the curent actor
     #
+    # @param [String] _channel NOT USED - needed to maintain compatibility with the other methods
+    # @param [Object] _json_data NOT USED - needed to maintain compatibility with the other methods
+    #
     # @return [void]
     #
     # @api public
-    def unsubscribe_all
+    def unsubscribe_all(_channel, _json_data)
       log_debug "#{self.class} runs 'unsubscribe_all' method"
       CelluloidPubsub::Registry.channels.dup.pmap do |channel|
         unsubscribe_clients(channel)
@@ -343,6 +374,16 @@ module CelluloidPubsub
     # @api public
     def unsubscribe_from_channel(channel)
       log_debug "#{self.class} runs 'unsubscribe_from_channel' method with #{channel}"
+      server_kill_reactors(channel)
+    end
+
+    # kills all reactors registered on a channel and closes their websocket connection
+    #
+    # @param [String] channel
+    # @return [void]
+    #
+    # @api public
+    def server_kill_reactors(channel)
       @server.mutex.synchronize do
         (@server.subscribers[channel].dup || []).pmap do |hash|
           reactor = hash[:reactor]
