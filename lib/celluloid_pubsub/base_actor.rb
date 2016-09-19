@@ -10,10 +10,14 @@ module CelluloidPubsub
       attr_reader :config
 
       def included(base)
-        base.send(:include, Celluloid)
-        base.send(:include, Celluloid::IO)
-        base.send(:include, CelluloidPubsub::Helper)
-        base.send(:include, config['logger_class'])
+        [
+          Celluloid,
+          Celluloid::IO,
+          CelluloidPubsub::Helper,
+          config['logger_class']
+        ].each do |module_name|
+          base.send(:include, module_name)
+        end
       end
 
       def config
@@ -39,8 +43,7 @@ module CelluloidPubsub
       end
 
       def setup_actor_supervision(class_name, options)
-        actor_name = options[:actor_name]
-        args = options[:args]
+        actor_name, args = options.slice(:actor_name, :args).values
         if version_less_than_seventeen?
           class_name.supervise_as(actor_name, args)
         else

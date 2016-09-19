@@ -8,5 +8,5 @@ TooManyMethods:
 UtilityFunction:
   enabled: false
 exclude_paths:
-  - examples
-  - spec
+ - examples/**/**
+ - spec/**/**

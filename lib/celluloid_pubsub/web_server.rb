@@ -57,12 +57,18 @@ module CelluloidPubsub
     #
     # @api public
     def self.open_socket_on_unused_port
-      infos = ::Socket::getaddrinfo('localhost', nil, Socket::AF_UNSPEC, Socket::SOCK_STREAM, 0, Socket::AI_PASSIVE)
-      families = Hash[*infos.map { |af, *_| af }.uniq.zip([]).flatten]
-
-      return ::TCPServer.open('0.0.0.0', 0) if families.key?('AF_INET')
-      return ::TCPServer.open('::', 0) if families.key?('AF_INET6')
+      return ::TCPServer.open('0.0.0.0', 0) if socket_families.key?('AF_INET')
+      return ::TCPServer.open('::', 0) if socket_families.key?('AF_INET6')
       ::TCPServer.open(0)
+    end
+
+    def self.socket_infos
+      ::Socket::getaddrinfo('localhost', nil, Socket::AF_UNSPEC, Socket::SOCK_STREAM, 0, Socket::AI_PASSIVE)
+    end
+
+    # rubocop:disable ClassVars
+    def self.socket_families
+      @@socket_families ||= Hash[*socket_infos.map { |af, *_| af }.uniq.zip([]).flatten]
     end
 
     # the method get from the socket connection that is already opened the port used.
@@ -71,7 +77,6 @@ module CelluloidPubsub
     # @return [Integer]  returns the port that can be used to issue new connection
     #
     # @api public
-    # rubocop:disable ClassVars
     def self.find_unused_port
       @@unused_port ||= begin
         socket = open_socket_on_unused_port

@@ -1,5 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
+require_relative './gem_version_parser'
 module CelluloidPubsub
   # class that holds the options that are configurable for this gem
   module Helper
@@ -31,12 +32,8 @@ module CelluloidPubsub
     end
 
     def get_parsed_version(version)
-      return 0 if version.blank?
-      version = version.to_s.split('.')
-      if version.size > 2
-        version.pop until version.size == 2
-      end
-      version.join('.').to_f
+      version_parser = CelluloidPubsub::GemVersionParser.new(version)
+      version_parser.parsed_number
     end
 
     def verify_gem_version(gem_version, version, options = {})
