@@ -28,7 +28,7 @@ module CelluloidPubsub
     # The channel to which the client will subscribe to once the connection is open
     # @return [String] The channel to which the client will subscribe to
     attr_accessor :channel
-    
+
     finalizer :shutdown
     #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
     #  when receiving messages from a channel
