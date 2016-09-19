@@ -1,18 +1,22 @@
+# encoding: utf-8
+# frozen_string_literal: true
 require_relative './reactor'
 require_relative './helper'
 module CelluloidPubsub
   # webserver to which socket connects should connect to .
   # the server will dispatch each request into a new Reactor
   # which will handle the action based on the message
-  # @!attribute options
+  # @attr  server_options
   #   @return [Hash] options used to configure the webserver
-  #   @option options [String]:hostname The hostname on which the webserver runs on
-  #   @option options [Integer] :port The port on which the webserver runs on
-  #   @option options [String] :path The request path that the webserver accepts
-  #   @option options [Boolean] :spy Enable this only if you want to enable debugging for the webserver
+  #   @option server_options [String]:hostname The hostname on which the webserver runs on
+  #   @option server_options [Integer] :port The port on which the webserver runs on
+  #   @option server_options [String] :path The request path that the webserver accepts
+  #   @option server_options [Boolean] :spy Enable this only if you want to enable debugging for the webserver
   #
-  # @!attribute subscribers
+  # @attr  subscribers
   #   @return [Hash] The hostname on which the webserver runs on
+  # @attr  mutex
+  #   @return [Mutex] The mutex that will synchronize actions on subscribers
   class WebServer < Reel::Server::HTTP
     include CelluloidPubsub::BaseActor
 
@@ -20,7 +24,7 @@ module CelluloidPubsub
     HOST = '0.0.0.0'
     # The request path that the webserver accepts by default
     PATH = '/ws'
-      # The name of the default adapter
+    # The name of the default adapter
     CLASSIC_ADAPTER = 'classic'
 
     attr_accessor :server_options, :subscribers, :mutex
@@ -55,12 +59,30 @@ module CelluloidPubsub
     #
     # @api public
     def self.open_socket_on_unused_port
-      infos = ::Socket::getaddrinfo("localhost", nil, Socket::AF_UNSPEC, Socket::SOCK_STREAM, 0, Socket::AI_PASSIVE)
-      families = Hash[*infos.collect { |af, *_| af }.uniq.zip([]).flatten]
+      return ::TCPServer.open('0.0.0.0', 0) if socket_families.key?('AF_INET')
+      return ::TCPServer.open('::', 0) if socket_families.key?('AF_INET6')
+      ::TCPServer.open(0)
+    end
 
-      return ::TCPServer.open('0.0.0.0', 0) if families.has_key?('AF_INET')
-      return ::TCPServer.open('::', 0) if families.has_key?('AF_INET6')
-      return ::TCPServer.open(0)
+    # the method will  return the socket information available as an array
+    #
+    #
+    # @return [Array]  return the socket information available as an array
+    #
+    # @api public
+    def self.socket_infos
+      ::Socket::getaddrinfo('localhost', nil, Socket::AF_UNSPEC, Socket::SOCK_STREAM, 0, Socket::AI_PASSIVE)
+    end
+
+    # the method will  return the socket families avaiable
+    #
+    #
+    # @return [Hash]  return the socket families available as keys in the hash
+    #
+    # @api public
+    # rubocop:disable ClassVars
+    def self.socket_families
+      @@socket_families ||= Hash[*socket_infos.map { |af, *_| af }.uniq.zip([]).flatten]
     end
 
     # the method get from the socket connection that is already opened the port used.
@@ -77,6 +99,7 @@ module CelluloidPubsub
         port
       end
     end
+    # rubocop:enable ClassVars
 
     # this method is overriden from the Reel::Server::HTTP in order to set the spy to the celluloid logger
     # before the connection is accepted.
@@ -105,7 +128,7 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @debug_enabled = @server_options.fetch('enable_debug', false)
+      @debug_enabled = @server_options.fetch('enable_debug', true)
       @debug_enabled == true
     end
 
@@ -179,7 +202,6 @@ module CelluloidPubsub
     def backlog
       @backlog = @server_options.fetch('backlog', 1024)
     end
-
 
     #  callback that will execute when receiving new conections
     # If the connections is a websocket will call method {#route_websocket}
@@ -263,13 +285,13 @@ module CelluloidPubsub
     #
     # @api public
     def route_websocket(reactor, socket)
-       url = socket.url
-       if url == path || url == "/?"
+      url = socket.url
+      if url == path || url == '/?'
         reactor.async.work(socket, Actor.current)
-       else
-         log_debug "Received invalid WebSocket request for: #{url}"
-         socket.close
-       end
+      else
+        log_debug "Received invalid WebSocket request for: #{url}"
+        socket.close
+      end
     end
 
     # If the message can be parsed into a Hash it will respond to the reactor's websocket connection with the same message in JSON format
@@ -284,11 +306,7 @@ module CelluloidPubsub
     def handle_dispatched_message(reactor, data)
       log_debug "#{self.class} trying to dispatch message  #{data.inspect}"
       message = reactor.parse_json_data(data)
-      if message.present? && message.is_a?(Hash)
-        final_data = message.to_json
-      else
-        final_data = data.to_json
-      end
+      final_data = message.present? && message.is_a?(Hash) ? message.to_json : data.to_json
       reactor.websocket << final_data
     end
   end
