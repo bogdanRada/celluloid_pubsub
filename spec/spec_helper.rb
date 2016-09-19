@@ -50,7 +50,7 @@ end
 class TestActor
   include CelluloidPubsub::BaseActor
 
-  def initialize(*args)
+  def initialize(*_args)
   end
 end
 
