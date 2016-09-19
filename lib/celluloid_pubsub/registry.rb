@@ -2,10 +2,12 @@
 # frozen_string_literal: true
 module CelluloidPubsub
   # class used to register new channels and save them in memory
+  # @!attribute channels
+  #   @return [Array] array of channels to which actors have subscribed to
   class Registry
     class << self
-      # @!attribute channels
-      #   @return [Array] array of channels to which actors have subscribed to
+      # The channels that the server can handle
+      # @return [Array] array of channels to which actors have subscribed to
       attr_accessor :channels
     end
     @channels = []
