@@ -17,25 +17,59 @@ module CelluloidPubsub
 
   module_function
 
+    # returns the gem's property from its speification or nil
+    # @param [String] name the name of the gem
+    # @param [String] property name of the property we want
+    #
+    # @return [String, nil] returns the version of the gem
+    #
+    # @api public
     def find_loaded_gem(name, property = nil)
       gem_spec = Gem.loaded_specs.values.find { |repo| repo.name == name }
       gem_spec.present? && property.present? ? gem_spec.send(property) : gem_spec
     end
 
+    # returns the gem's property from its speification or nil
+    # @param [String] gem_name name of the gem
+    # @param [String] property name of the property we want
+    #
+    # @return [String, nil] returns the version of the gem
+    #
+    # @api public
     def find_loaded_gem_property(gem_name, property = 'version')
       find_loaded_gem(gem_name, property)
     end
 
+    # returns the parsed version of the gem
+    # @param [String] gem_name name of the gem
+    #
+    # @return [Float, nil] returns the version of the gem
+    #
+    # @api public
     def fetch_gem_version(gem_name)
       version = find_loaded_gem_property(gem_name)
       version.blank? ? nil : get_parsed_version(version)
     end
 
+    # returns the parsed version as a float or nil
+    # @param [String] version the version that needs to be parsed
+    #
+    # @return [Float, nil] returns the version of the gem
+    #
+    # @api public
     def get_parsed_version(version)
       version_parser = CelluloidPubsub::GemVersionParser.new(version)
       version_parser.parsed_number
     end
 
+    # returns true if gem_version is less or equal to the specified version, otherwise false
+    # @param [String] gem_version the version of the gem
+    # @param [String] version the version that will be checked against
+    # @param [Hash] options additional options
+    #
+    # @return [Boolean] returns true if gem_version is less or equal to the specified version, otherwise false
+    #
+    # @api public
     def verify_gem_version(gem_version, version, options = {})
       options.stringify_keys!
       version = get_parsed_version(version)

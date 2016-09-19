@@ -6,15 +6,17 @@ module CelluloidPubsub
   # webserver to which socket connects should connect to .
   # the server will dispatch each request into a new Reactor
   # which will handle the action based on the message
-  # @!attribute options
+  # @attr  server_options
   #   @return [Hash] options used to configure the webserver
-  #   @option options [String]:hostname The hostname on which the webserver runs on
-  #   @option options [Integer] :port The port on which the webserver runs on
-  #   @option options [String] :path The request path that the webserver accepts
-  #   @option options [Boolean] :spy Enable this only if you want to enable debugging for the webserver
+  #   @option server_options [String]:hostname The hostname on which the webserver runs on
+  #   @option server_options [Integer] :port The port on which the webserver runs on
+  #   @option server_options [String] :path The request path that the webserver accepts
+  #   @option server_options [Boolean] :spy Enable this only if you want to enable debugging for the webserver
   #
-  # @!attribute subscribers
+  # @attr  subscribers
   #   @return [Hash] The hostname on which the webserver runs on
+  # @attr  mutex
+  #   @return [Mutex] The mutex that will synchronize actions on subscribers
   class WebServer < Reel::Server::HTTP
     include CelluloidPubsub::BaseActor
 
@@ -62,10 +64,22 @@ module CelluloidPubsub
       ::TCPServer.open(0)
     end
 
+    # the method will  return the socket information available as an array
+    #
+    #
+    # @return [Array]  return the socket information available as an array
+    #
+    # @api public
     def self.socket_infos
       ::Socket::getaddrinfo('localhost', nil, Socket::AF_UNSPEC, Socket::SOCK_STREAM, 0, Socket::AI_PASSIVE)
     end
 
+    # the method will  return the socket families avaiable
+    #
+    #
+    # @return [Hash]  return the socket families available as keys in the hash
+    #
+    # @api public
     # rubocop:disable ClassVars
     def self.socket_families
       @@socket_families ||= Hash[*socket_infos.map { |af, *_| af }.uniq.zip([]).flatten]
