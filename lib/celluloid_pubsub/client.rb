@@ -17,7 +17,18 @@ module CelluloidPubsub
   class Client
     include CelluloidPubsub::BaseActor
 
-    attr_accessor :actor, :options, :channel
+    # The actor that made the connection
+    # @return [Celluloid::Actor] actor to which callbacks will be delegated to
+    attr_accessor :actor
+
+    #  options that can be used to connect to webser and send additional data
+    # @return [Hash] the options that can be used to connect to webser and send additional data
+    attr_accessor :options
+
+    # The channel to which the client will subscribe to once the connection is open
+    # @return [String] The channel to which the client will subscribe to
+    attr_accessor :channel
+    
     finalizer :shutdown
     #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
     #  when receiving messages from a channel

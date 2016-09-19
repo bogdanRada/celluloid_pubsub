@@ -17,7 +17,18 @@ module CelluloidPubsub
   class Reactor
     include CelluloidPubsub::BaseActor
 
-    attr_accessor :websocket, :server, :channels
+    # The websocket connection received from the server
+    # @return [Reel::WebSocket] websocket connection
+    attr_accessor :websocket
+
+    # The server instance to which this reactor is linked to
+    # @return [CelluloidPubsub::Webserver] the server actor to which the reactor is connected to
+    attr_accessor :server
+
+    # The channels to which this reactor has subscribed to
+    # @return [Array] array of channels to which the current reactor has subscribed to
+    attr_accessor :channels
+
     finalizer :shutdown
     #  rececives a new socket connection from the server
     #  and listens for messages

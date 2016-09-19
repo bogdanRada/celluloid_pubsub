@@ -13,9 +13,10 @@ Gem::Specification.new do |s|
 
   s.licenses = ['MIT']
   s.files = `git ls-files`.split("\n")
-  s.test_files = s.files.grep(/^(spec)/)
+  s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
+  s.executables   = `git ls-files -- bin/*`.split('\n').map{ |f| File.basename(f) }
   s.require_paths = ['lib']
-
+  
   s.add_runtime_dependency 'celluloid', '>= 0.16', '>= 0.16.0'
   s.add_runtime_dependency 'celluloid-io', '>= 0.16', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '~> 0.6', '>= 0.6.0'
