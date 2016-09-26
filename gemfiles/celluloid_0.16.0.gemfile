@@ -2,7 +2,6 @@
 
 source "http://rubygems.org"
 
-gem "activesupport", ">= 4.0", ">= 4.0"
 gem "celluloid", "0.16.0"
 
 gemspec :path => "../"
