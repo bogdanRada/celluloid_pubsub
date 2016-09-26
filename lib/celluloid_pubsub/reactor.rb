@@ -147,12 +147,12 @@ module CelluloidPubsub
     #
     # @api public
     def handle_parsed_websocket_message(json_data)
-      if json_data.is_a?(Hash)
-        json_data = json_data.stringify_keys
+      data =  json_data.is_a?(Hash) ? json_data.stringify_keys : {}
+      if CelluloidPubsub::Reactor::AVAILABLE_ACTIONS.include?(data['client_action'].to_s)
         log_debug "#{self.class} finds actions for  #{json_data}"
-        delegate_action(json_data) if json_data['client_action'].present?
+        delegate_action(data) if data['client_action'].present?
       else
-        handle_unknown_action(json_data)
+        handle_unknown_action(data['channel'], json_data)
       end
     end
 
@@ -179,9 +179,7 @@ module CelluloidPubsub
     #
     # @api public
     def delegate_action(json_data)
-      channel, client_action = json_data.slice('channel', 'client_action').values
-      return unless CelluloidPubsub::Reactor::AVAILABLE_ACTIONS.include?(client_action)
-      async.send(client_action, channel, json_data)
+      async.send(json_data['client_action'], json_data['channel'], json_data)
     end
 
     # the method will delegate the message to the server in an asyncronous way by sending the current actor and the message
@@ -357,10 +355,10 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def unsubscribe_all(_channel, _json_data)
+    def unsubscribe_all(_channel, json_data)
       log_debug "#{self.class} runs 'unsubscribe_all' method"
       CelluloidPubsub::Registry.channels.dup.pmap do |channel|
-        unsubscribe_clients(channel)
+        unsubscribe_clients(channel, json_data)
       end
       log_debug 'clearing connections'
       shutdown
