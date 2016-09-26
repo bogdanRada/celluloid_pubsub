@@ -3,12 +3,15 @@ sudo: false
 
 cache: bundler
 
-bundler_args: --without test --jobs 3 --retry 3
+bundler_args: --binstubs=./bin
 
 before_install:
   - "echo 'gem: --no-ri --no-rdoc' > ~/.gemrc"
   - gem install bundler
   - gem update bundler
+
+before_script:
+  - bundle update
 
 install:
 - bundle install --path vendor/bundle
@@ -16,10 +19,9 @@ install:
 script: bundle exec rake
 
 rvm:
-- 2.0.0
-- 2.1.5
 - 2.2.2
 - 2.2.3
+- 2.3.1
 env:
  - RAILS_ENV=test RACK_ENV=test
 notifications:
