@@ -16,3 +16,5 @@ ClassVariable:
 exclude_paths:
  - examples/**/**
  - spec/**/**
+
+ 
