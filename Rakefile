@@ -31,6 +31,11 @@ task :all do |_t|
   end
 end
 
+# dirty hack for YardocTask
+::Rake.application.class.class_eval do
+  alias_method :last_comment, :last_description
+end
+
 YARD::Config.options[:load_plugins] = true
 YARD::Config.load_plugins
 

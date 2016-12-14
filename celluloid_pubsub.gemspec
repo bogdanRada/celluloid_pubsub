@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split('\n').map{ |f| File.basename(f) }
   s.require_paths = ['lib']
-  
+
   s.add_runtime_dependency 'celluloid', '>= 0.16', '>= 0.16.0'
   s.add_runtime_dependency 'celluloid-io', '>= 0.16', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '~> 0.6', '>= 0.6.0'
@@ -25,14 +25,14 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'activesupport', '>= 4.0', '>= 4.0'
 
   s.add_development_dependency 'appraisal', '~> 2.1', '>= 2.1'
-  s.add_development_dependency 'rspec', '~> 3.4', '>= 3.4'
-  s.add_development_dependency 'simplecov', '~> 0.10', '>= 0.10'
-  s.add_development_dependency 'simplecov-summary', '~> 0.0.4', '>= 0.0.4'
-  s.add_development_dependency 'mocha', '~> 1.1', '>= 1.1'
-  s.add_development_dependency 'coveralls', '~> 0.7', '>= 0.7'
-  s.add_development_dependency 'rake', '>= 10.5', '>= 10.5'
+  s.add_development_dependency 'rspec', '~> 3.5', '>= 3.5'
+  s.add_development_dependency 'simplecov', '~> 0.12', '>= 0.12'
+  s.add_development_dependency 'simplecov-summary', '~> 0.0', '>= 0.0.5'
+  s.add_development_dependency 'mocha', '~> 1.2', '>= 1.2'
+  s.add_development_dependency 'coveralls', '~> 0.8', '>= 0.8'
+  s.add_development_dependency 'rake', '>= 12.0', '>= 12.0'
   s.add_development_dependency 'yard', '~> 0.8', '>= 0.8.7'
   s.add_development_dependency 'redcarpet', '~> 3.3', '>= 3.3'
-  s.add_development_dependency 'github-markup', '~> 1.3', '>= 1.3.3'
-  s.add_development_dependency 'inch', '~> 0.6', '>= 0.6'
+  s.add_development_dependency 'github-markup', '~> 1.4', '>= 1.4'
+  s.add_development_dependency 'inch', '~> 0.7', '>= 0.7'
 end

@@ -3,20 +3,19 @@ sudo: false
 
 cache: bundler
 
-bundler_args: --binstubs=./bin
+bundler_args: --no-deployment --binstubs=./bin
 
 before_install:
   - "echo 'gem: --no-ri --no-rdoc' > ~/.gemrc"
   - gem install bundler
   - gem update bundler
 
-before_script:
-  - bundle update
-
 install:
-- bundle install --path vendor/bundle
+  - bundle install --path vendor/bundle
 
-script: bundle exec rake
+script:
+   - echo $BUNDLE_GEMFILE
+   - bundle exec rake
 
 rvm:
 - 2.2.2

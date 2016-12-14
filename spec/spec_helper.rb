@@ -6,12 +6,12 @@ require 'simplecov-summary'
 require 'coveralls'
 
 # require "codeclimate-test-reporter"
-formatters = [SimpleCov::Formatter::HTMLFormatter]
+formatters = [SimpleCov::Formatter::SummaryFormatter, SimpleCov::Formatter::HTMLFormatter]
 
 formatters << Coveralls::SimpleCov::Formatter # if ENV['TRAVIS']
 # formatters << CodeClimate::TestReporter::Formatter # if ENV['CODECLIMATE_REPO_TOKEN'] && ENV['TRAVIS']
 
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[*formatters]
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(formatters)
 
 Coveralls.wear!
 SimpleCov.start 'rails' do
@@ -53,7 +53,7 @@ class TestActor
   def initialize(*_args)
   end
 end
-
+Celluloid.boot unless Celluloid.running?
 CelluloidPubsub::BaseActor.setup_actor_supervision(TestActor, actor_name: :test_actor, args: { })
 
 unless defined?(silence_stream) # Rails 5
