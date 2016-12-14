@@ -81,8 +81,13 @@ module CelluloidPubsub
   end
 end
 
+
 if CelluloidPubsub::BaseActor.version_less_than_seventeen?
+  require 'celluloid'
   require 'celluloid/autostart'
 else
   require 'celluloid/current'
+  celluloid_running = Celluloid.running? rescue false
+   Celluloid.boot unless celluloid_running
+  require 'celluloid'
 end
