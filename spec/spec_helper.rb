@@ -53,7 +53,8 @@ class TestActor
   def initialize(*_args)
   end
 end
-Celluloid.boot unless Celluloid.running?
+celluloid_running = Celluloid.running? rescue false
+ Celluloid.boot unless celluloid_running
 CelluloidPubsub::BaseActor.setup_actor_supervision(TestActor, actor_name: :test_actor, args: { })
 
 unless defined?(silence_stream) # Rails 5
