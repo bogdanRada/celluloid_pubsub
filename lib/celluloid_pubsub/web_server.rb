@@ -27,7 +27,7 @@ module CelluloidPubsub
     # The name of the default adapter
     CLASSIC_ADAPTER = 'classic'
 
-    attr_accessor :server_options, :subscribers, :mutex
+    attr_accessor :server_options, :subscribers, :mutex, :reactor
     finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
@@ -247,6 +247,19 @@ module CelluloidPubsub
       adapter == CelluloidPubsub::WebServer::CLASSIC_ADAPTER ? CelluloidPubsub::Reactor : "CelluloidPubsub::#{adapter.camelize}Reactor".constantize
     end
 
+    #  returns the reactor insstance that will handle the connection
+    # @see #redis_enabled?
+    #
+    # @return [Class]  returns the insstance class that will handle the connection
+    #
+    # @api public
+    def reactor
+      @reactor ||= reactor_class.new
+      Actor.current.link @reactor
+      @reactor
+    end
+
+
     # method will instantiate a new reactor object, will link the reactor to the current actor and will dispatch the request to the reactor
     # @see #route_websocket
     #
@@ -256,9 +269,7 @@ module CelluloidPubsub
     #
     # @api public
     def dispatch_websocket_request(request)
-      reactor = reactor_class.new
-      Actor.current.link reactor
-      route_websocket(reactor, request.websocket)
+      route_websocket(request.websocket)
     end
 
     #  HTTP connections are not accepted so this method will show 404 message "Not Found"
@@ -284,7 +295,7 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def route_websocket(reactor, socket)
+    def route_websocket(socket)
       url = socket.url
       if url == path || url == '/?'
         reactor.async.work(socket, Actor.current)
@@ -303,11 +314,11 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def handle_dispatched_message(reactor, data)
+    def handle_dispatched_message(websocket, reactor, data)
       log_debug "#{self.class} trying to dispatch message  #{data.inspect}"
       message = reactor.parse_json_data(data)
       final_data = message.present? && message.is_a?(Hash) ? message.to_json : data.to_json
-      reactor.websocket << final_data
+      websocket << final_data
     end
   end
 end
