@@ -229,10 +229,8 @@ module CelluloidPubsub
     #
     # @api public
     def delete_server_subscribers(websocket, channel)
-      @server.mutex.synchronize do
-        (@server.subscribers[channel] || []).delete_if do |hash|
-          hash[:socket] == websocket
-        end
+      (@server.subscribers[channel] || []).delete_if do |hash|
+        hash[:socket] == websocket
       end
     end
 
@@ -306,9 +304,7 @@ module CelluloidPubsub
       registry_channels = CelluloidPubsub::Registry.channels
       @channels << channel
       registry_channels << channel unless registry_channels.include?(channel)
-      @server.mutex.synchronize do
-        @server.subscribers[channel] = channel_subscribers(channel).push(socket: websocket, message: message)
-      end
+      @server.subscribers[channel] = channel_subscribers(channel).push(socket: websocket, message: message)
     end
 
     #  method for publishing data to a channel
@@ -336,10 +332,8 @@ module CelluloidPubsub
     #
     # @api public
     def server_pusblish_event(current_topic, message)
-      @server.mutex.synchronize do
-        (@server.subscribers[current_topic].dup || []).pmap do |hash|
-          hash[:socket] << message
-        end
+      (@server.subscribers[current_topic].dup || []).pmap do |hash|
+        hash[:socket] << message
       end
     end
 
@@ -377,12 +371,10 @@ module CelluloidPubsub
     #
     # @api public
     def server_kill_reactors(channel)
-      return if @server.mutex.blank?
-      @server.mutex.synchronize do
-        (@server.subscribers[channel].dup || []).pmap do |hash|
-          socket = hash[:socket]
-          socket.close if socket.present?
-        end
+      return if @server.subscribers.blank?
+      (@server.subscribers[channel].dup || []).pmap do |hash|
+        socket = hash[:socket]
+        socket.close if socket.present?
       end
     end
   end

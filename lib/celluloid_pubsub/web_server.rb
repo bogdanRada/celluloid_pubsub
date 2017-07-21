@@ -15,8 +15,6 @@ module CelluloidPubsub
   #
   # @attr  subscribers
   #   @return [Hash] The hostname on which the webserver runs on
-  # @attr  mutex
-  #   @return [Mutex] The mutex that will synchronize actions on subscribers
   class WebServer < Reel::Server::HTTP
     include CelluloidPubsub::BaseActor
 
@@ -27,7 +25,7 @@ module CelluloidPubsub
     # The name of the default adapter
     CLASSIC_ADAPTER = 'classic'
 
-    attr_accessor :server_options, :subscribers, :mutex, :reactor
+    attr_accessor :server_options, :subscribers, :reactor
     finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
@@ -46,7 +44,6 @@ module CelluloidPubsub
       Celluloid.boot unless Celluloid.running?
       @server_options = parse_options(options)
       @subscribers = {}
-      @mutex = Mutex.new
       setup_celluloid_logger
       debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
