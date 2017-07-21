@@ -140,6 +140,7 @@ module CelluloidPubsub
     # @api public
     def shutdown
       debug "#{self.class} tries to 'shudown'"
+      reactor.shutdown
       terminate
     end
 

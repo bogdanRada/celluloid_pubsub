@@ -176,7 +176,7 @@ module CelluloidPubsub
     def delegate_action(websocket, json_data)
       async.send(json_data['client_action'], websocket, json_data['channel'], json_data)
     end
-    
+
     # the method will delegate the message to the server in an asyncronous way by sending the current actor and the message
     # @see {CelluloidPubsub::WebServer#handle_dispatched_message}
     #
@@ -258,8 +258,9 @@ module CelluloidPubsub
     # @api public
     def shutdown
       debug "#{self.class} tries to 'shudown'"
-      @websocket.close if @websocket.present? && !@websocket.closed?
-      terminate
+      @channels.dup.each do |channel|
+        server_kill_reactors(channel)
+      end if @channels.present?
     end
 
     # this method will add the current actor to the list of the subscribers {#add_subscriber_to_channel}
@@ -356,7 +357,6 @@ module CelluloidPubsub
         unsubscribe_clients(channel, json_data)
       end
       log_debug 'clearing connections'
-      shutdown
     end
 
     # unsubscribes all actors from the specified chanel
@@ -377,6 +377,7 @@ module CelluloidPubsub
     #
     # @api public
     def server_kill_reactors(channel)
+      return if @server.mutex.blank?
       @server.mutex.synchronize do
         (@server.subscribers[channel].dup || []).pmap do |hash|
           socket = hash[:socket]
