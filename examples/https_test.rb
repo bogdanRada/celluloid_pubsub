@@ -55,8 +55,8 @@ class SecondActor
 end
 
 options = {
-  :cert => File.read(File.expand_path("../certs/client.crt", __FILE__)),
-  :key  => File.read(File.expand_path("../certs/client.key", __FILE__))
+  :cert => File.read(File.expand_path("../tmp/certs/server.crt", __FILE__)),
+  :key  => File.read(File.expand_path("../tmp/certs/server.key", __FILE__))
 }
 
 # please don't use the BaseActor class to supervise actors. This is subject to change . This class is used only to test backward compatibility.
