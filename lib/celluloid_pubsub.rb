@@ -13,3 +13,14 @@ require 'celluloid/pmap'
 require 'celluloid_pubsub/base_actor'
 Gem.find_files('celluloid_pubsub/initializers/**/*.rb').each { |path| require path }
 Gem.find_files('celluloid_pubsub/**/*.rb').each { |path| require path }
+
+module CelluloidPubsub
+
+  def self.configure
+    yield config
+  end
+
+  def self.config
+    @config ||= CelluloidPubsub::Configuration.new
+  end
+end

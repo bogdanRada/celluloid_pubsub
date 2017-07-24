@@ -73,6 +73,16 @@ module CelluloidPubsub
       current_actor.link connection
     end
 
+    # the method will return the protocol used for connection (ws or wss)
+    #
+    #
+    # @return [String] the websocket protocol used to connect to server (ws or wss)
+    #
+    # @api public
+    def connection_protocol
+      @connection_protocol = CelluloidPubsub.config.secure.to_s.downcase == 'true' ? "wss" : "ws"
+    end
+    
     # the method will return the client that is used to
     #
     #
@@ -80,7 +90,7 @@ module CelluloidPubsub
     #
     # @api public
     def connection
-      @connection ||= Celluloid::WebSocket::Client.new("ws://#{hostname}:#{port}#{path}", Actor.current)
+      @connection ||= Celluloid::WebSocket::Client.new("#{connection_protocol}://#{hostname}:#{port}#{path}", Actor.current)
     end
 
     # the method will return the hostname of the server
@@ -90,7 +100,7 @@ module CelluloidPubsub
     #
     # @api public
     def hostname
-      @hostname ||= @options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
+      @hostname ||= @options.fetch('hostname', CelluloidPubsub.config.host)
     end
 
     # the method will return the port on which the server accepts connections
@@ -100,7 +110,7 @@ module CelluloidPubsub
     #
     # @api public
     def port
-      @port ||= @options.fetch('port', nil) || CelluloidPubsub::WebServer.find_unused_port
+      @port ||= @options.fetch('port', nil) || CelluloidPubsub.config.port || CelluloidPubsub::ServerActor.find_unused_port
     end
 
     # the method will return the path of the URL on which the servers acccepts the connection
@@ -110,7 +120,7 @@ module CelluloidPubsub
     #
     # @api public
     def path
-      @path ||= @options.fetch('path', CelluloidPubsub::WebServer::PATH)
+      @path ||= @options.fetch('path', CelluloidPubsub.config.path)
     end
 
     # the method will terminate the current actor

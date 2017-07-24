@@ -10,7 +10,7 @@ module CelluloidPubsub
   #   @return [Reel::WebSocket] websocket connection
   #
   # @!attribute server
-  #   @return [CelluloidPubsub::Webserver] the server actor to which the reactor is connected to
+  #   @return [CelluloidPubsub::ServerActor] the server actor to which the reactor is connected to
   #
   # @!attribute channels
   #   @return [Array] array of channels to which the current reactor has subscribed to
@@ -25,7 +25,7 @@ module CelluloidPubsub
     attr_accessor :websocket
 
     # The server instance to which this reactor is linked to
-    # @return [CelluloidPubsub::Webserver] the server actor to which the reactor is connected to
+    # @return [CelluloidPubsub::ServerActor] the server actor to which the reactor is connected to
     attr_accessor :server
 
     # The channels to which this reactor has subscribed to
@@ -183,7 +183,7 @@ module CelluloidPubsub
     end
 
     # the method will delegate the message to the server in an asyncronous way by sending the current actor and the message
-    # @see {CelluloidPubsub::WebServer#handle_dispatched_message}
+    # @see {CelluloidPubsub::ServerActor#handle_dispatched_message}
     #
     # @param [Hash] json_data
     #
@@ -282,7 +282,7 @@ module CelluloidPubsub
       return unless channel.present?
       add_subscriber_to_channel(channel, message)
       log_debug "#{self.class} subscribed to #{channel} with #{message}"
-      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json if @server.adapter == CelluloidPubsub::WebServer::CLASSIC_ADAPTER
+      @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json if @server.adapter == 'classic'
     end
 
     # this method will return a list of all subscribers to a particular channel or a empty array

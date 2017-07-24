@@ -17,15 +17,13 @@ module CelluloidPubsub
   #   @return [Hash] The hostname on which the webserver runs on
   # @attr  mutex
   #   @return [Mutex] The mutex that will synchronize actions on subscribers
-  class WebServer < Reel::Server::HTTP
+  module ServerActor
     include CelluloidPubsub::BaseActor
 
-    # The hostname on which the webserver runs on by default
-    HOST = '0.0.0.0'
-    # The request path that the webserver accepts by default
-    PATH = '/ws'
-    # The name of the default adapter
-    CLASSIC_ADAPTER = 'classic'
+
+    def self.included(base)
+      base.send(:include, CelluloidPubsub::BaseActor)
+    end
 
     attr_accessor :server_options, :subscribers, :mutex
     finalizer :shutdown
@@ -42,14 +40,13 @@ module CelluloidPubsub
     # @api public
     #
     # :nocov:
-    def initialize(options = {})
+    def initialize_server(options = {})
       Celluloid.boot unless Celluloid.running?
       @server_options = parse_options(options)
       @subscribers = {}
       @mutex = Mutex.new
       setup_celluloid_logger
       debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
-      super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
 
     # the method will  return the socket conection opened on the unused port
@@ -117,8 +114,8 @@ module CelluloidPubsub
     #
     # @api public
     def adapter
-      @adapter ||= @server_options.fetch('adapter', CelluloidPubsub::WebServer::CLASSIC_ADAPTER)
-      @adapter.present? ? @adapter : CelluloidPubsub::WebServer::CLASSIC_ADAPTER
+      @adapter ||= @server_options.fetch('adapter', CelluloidPubsub.config.adapter) ||  CelluloidPubsub.config.adapter
+      @adapter.present? ? @adapter : CelluloidPubsub.config.adapter
     end
 
     # the method will return true if debug is enabled otherwise false
@@ -128,7 +125,7 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @debug_enabled = @server_options.fetch('enable_debug', true)
+      @debug_enabled = @server_options.fetch('enable_debug', CelluloidPubsub.config.debug_enabled) || CelluloidPubsub.config.debug_enabled
       @debug_enabled == true
     end
 
@@ -150,7 +147,7 @@ module CelluloidPubsub
     #
     # @api public
     def log_file_path
-      @log_file_path = @server_options.fetch('log_file_path', nil)
+      @log_file_path = @server_options.fetch('log_file_path', CelluloidPubsub.config.log_file_path) || CelluloidPubsub.config.log_file_path
     end
 
     # the method will return the hostname on which the server is running on
@@ -160,7 +157,7 @@ module CelluloidPubsub
     #
     # @api public
     def hostname
-      @hostname = @server_options.fetch('hostname', CelluloidPubsub::WebServer::HOST)
+      @hostname = @server_options.fetch('hostname', CelluloidPubsub.config.host) || CelluloidPubsub.config.host
     end
 
     # the method will return the port on which will accept connections
@@ -170,7 +167,7 @@ module CelluloidPubsub
     #
     # @api public
     def port
-      @port ||= @server_options.fetch('port', nil) || self.class.find_unused_port
+      @port ||= @server_options.fetch('port', nil) || CelluloidPubsub.config.port || CelluloidPubsub::ServerActor.find_unused_port
     end
 
     # the method will return the URL path on which will acceept connections
@@ -180,7 +177,7 @@ module CelluloidPubsub
     #
     # @api public
     def path
-      @path = @server_options.fetch('path', CelluloidPubsub::WebServer::PATH)
+      @path = @server_options.fetch('path', CelluloidPubsub.config.path)
     end
 
     # the method will return true if connection to the server should be spied upon
@@ -190,7 +187,7 @@ module CelluloidPubsub
     #
     # @api public
     def spy
-      @spy = @server_options.fetch('spy', false)
+      @spy = @server_options.fetch('spy', CelluloidPubsub.config.spy) || CelluloidPubsub.config.spy
     end
 
     # the method will return the number of connections allowed to the server
@@ -200,7 +197,7 @@ module CelluloidPubsub
     #
     # @api public
     def backlog
-      @backlog = @server_options.fetch('backlog', 1024)
+      @backlog = @server_options.fetch('backlog', CelluloidPubsub.config.backlog) || CelluloidPubsub.config.backlog
     end
 
     #  callback that will execute when receiving new conections
@@ -244,7 +241,7 @@ module CelluloidPubsub
     #
     # @api public
     def reactor_class
-      adapter == CelluloidPubsub::WebServer::CLASSIC_ADAPTER ? CelluloidPubsub::Reactor : "CelluloidPubsub::#{adapter.camelize}Reactor".constantize
+      adapter == 'classic' ? CelluloidPubsub::Reactor : "CelluloidPubsub::#{adapter.camelize}Reactor".constantize
     end
 
     # method will instantiate a new reactor object, will link the reactor to the current actor and will dispatch the request to the reactor
