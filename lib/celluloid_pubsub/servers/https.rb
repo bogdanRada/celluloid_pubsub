@@ -34,8 +34,9 @@ module CelluloidPubsub
       #
       # :nocov:
       def initialize(options = {})
+        CelluloidPubsub.config.secure = true
         initialize_server(options)
-        super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
+        super(hostname, port, { spy: spy, backlog: backlog }.merge(options), &method(:on_connection))
       end
 
     end

@@ -36,4 +36,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'redcarpet', '~> 3.4', '>= 3.4'
   s.add_development_dependency 'github-markup', '~> 1.4', '>= 1.4'
   s.add_development_dependency 'inch', '~> 0.7', '>= 0.7'
+
+  s.add_development_dependency 'certificate_authority'
+  s.add_development_dependency 'websocket_parser', '>= 0.1.6'
 end
