@@ -25,7 +25,7 @@ module CelluloidPubsub
       base.send(:include, CelluloidPubsub::BaseActor)
     end
 
-    attr_accessor :server_options, :subscribers, :mutex
+    attr_accessor :server_options, :subscribers, :mutex, :server_options, :app
     finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
@@ -40,13 +40,15 @@ module CelluloidPubsub
     # @api public
     #
     # :nocov:
-    def initialize_server(options = {})
+    def initialize_server(app, options = {})
       Celluloid.boot unless Celluloid.running?
       @server_options = parse_options(options)
       @subscribers = {}
       @mutex = Mutex.new
       setup_celluloid_logger
       debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
+      yield if block_given?
+      @app = app
     end
 
     # the method will  return the socket conection opened on the unused port
@@ -114,7 +116,7 @@ module CelluloidPubsub
     #
     # @api public
     def adapter
-      @adapter ||= @server_options.fetch('adapter', CelluloidPubsub.config.adapter) ||  CelluloidPubsub.config.adapter
+      @adapter ||= @server_options.delete(:adapter) ||  CelluloidPubsub.config.adapter
       @adapter.present? ? @adapter : CelluloidPubsub.config.adapter
     end
 
@@ -125,7 +127,7 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @debug_enabled = @server_options.fetch('enable_debug', CelluloidPubsub.config.debug_enabled) || CelluloidPubsub.config.debug_enabled
+      @debug_enabled = @server_options.delete(:enable_debug) || CelluloidPubsub.config.debug_enabled
       @debug_enabled == true
     end
 
@@ -147,7 +149,7 @@ module CelluloidPubsub
     #
     # @api public
     def log_file_path
-      @log_file_path = @server_options.fetch('log_file_path', CelluloidPubsub.config.log_file_path) || CelluloidPubsub.config.log_file_path
+      @log_file_path = @server_options.delete(:log_file_path) || CelluloidPubsub.config.log_file_path
     end
 
     # the method will return the hostname on which the server is running on
@@ -157,7 +159,7 @@ module CelluloidPubsub
     #
     # @api public
     def hostname
-      @hostname = @server_options.fetch('hostname', CelluloidPubsub.config.host) || CelluloidPubsub.config.host
+      @hostname = @server_options.delete(:hostname) || CelluloidPubsub.config.host
     end
 
     # the method will return the port on which will accept connections
@@ -167,7 +169,7 @@ module CelluloidPubsub
     #
     # @api public
     def port
-      @port ||= @server_options.fetch('port', nil) || CelluloidPubsub.config.port || CelluloidPubsub::ServerActor.find_unused_port
+      @port ||= @server_options.delete(:port) || CelluloidPubsub.config.port || CelluloidPubsub::ServerActor.find_unused_port
     end
 
     # the method will return the URL path on which will acceept connections
@@ -177,7 +179,7 @@ module CelluloidPubsub
     #
     # @api public
     def path
-      @path = @server_options.fetch('path', CelluloidPubsub.config.path)
+      @path = @server_options.delete('path') || CelluloidPubsub.config.path
     end
 
     # the method will return true if connection to the server should be spied upon
@@ -187,7 +189,7 @@ module CelluloidPubsub
     #
     # @api public
     def spy
-      @spy = @server_options.fetch('spy', CelluloidPubsub.config.spy) || CelluloidPubsub.config.spy
+      @spy = @server_options.delete(:spy) || CelluloidPubsub.config.spy
     end
 
     # the method will return the number of connections allowed to the server
@@ -197,7 +199,7 @@ module CelluloidPubsub
     #
     # @api public
     def backlog
-      @backlog = @server_options.fetch('backlog', CelluloidPubsub.config.backlog) || CelluloidPubsub.config.backlog
+      @backlog = @server_options.delete(:backlog) || CelluloidPubsub.config.backlog
     end
 
     #  callback that will execute when receiving new conections

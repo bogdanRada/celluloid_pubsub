@@ -17,7 +17,7 @@ module CelluloidPubsub
     #   @return [Hash] The hostname on which the webserver runs on
     # @attr  mutex
     #   @return [Mutex] The mutex that will synchronize actions on subscribers
-    class HTTPS < Reel::Server::HTTPS
+    class HTTPS <  Reel::Server::HTTPS
       include CelluloidPubsub::ServerActor
 
       #  receives a list of options that are used to configure the webserver
@@ -33,11 +33,16 @@ module CelluloidPubsub
       # @api public
       #
       # :nocov:
-      def initialize(options = {})
+      def initialize(app, options = {})
         CelluloidPubsub.config.secure = true
-        initialize_server(options)
-        super(hostname, port, { spy: spy, backlog: backlog }.merge(options), &method(:on_connection))
+        initialize_server(app, options) do
+          options[:cert] = parse_cert(options[:cert])
+          options[:key] = parse_cert(options[:key])
+          puts JSON.pretty_generate([hostname, port, spy, backlog, options])
+          super(hostname, port, { spy: spy, backlog: backlog }.merge(options), &method(:on_connection))
+        end
       end
+
 
     end
   end

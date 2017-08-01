@@ -35,7 +35,7 @@ server_cert.subject.common_name  = '*'
 server_cert.serial_number.number = 1
 server_cert.key_material.generate_key
 server_cert.parent = ca
-server_cert.sign!
+server_cert.sign!('extensions' => { 'keyUsage' => { 'usage' => %w(keyCertSign) }})
 
 server_cert_path = File.join(certs_dir, 'server.crt')
 server_key_path  = File.join(certs_dir, 'server.key')
@@ -52,7 +52,7 @@ client_cert.subject.common_name  = '*'
 client_cert.serial_number.number = 1
 client_cert.key_material.generate_key
 client_cert.parent = ca
-client_cert.sign!
+client_cert.sign!('extensions' => { 'keyUsage' => { 'usage' => %w(digitalSignature) }})
 
 client_cert_path = File.join(certs_dir, 'client.crt')
 client_key_path  = File.join(certs_dir, 'client.key')
@@ -68,7 +68,7 @@ client_unsigned_cert = CertificateAuthority::Certificate.new
 client_unsigned_cert.subject.common_name  = '*'
 client_unsigned_cert.serial_number.number = 1
 client_unsigned_cert.key_material.generate_key
-client_unsigned_cert.sign!
+client_unsigned_cert.sign!('extensions' => { 'keyUsage' => { 'usage' => %w(digitalSignature) }})
 
 client_unsigned_cert_path = File.join(certs_dir, 'client.unsigned.crt')
 client_unsigned_key_path  = File.join(certs_dir, 'client.unsigned.key')

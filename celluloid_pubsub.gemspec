@@ -18,12 +18,13 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split('\n').map{ |f| File.basename(f) }
   s.require_paths = ['lib']
 
-  s.add_runtime_dependency 'celluloid', '>= 0.16', '>= 0.16.0'
-  s.add_runtime_dependency 'celluloid-io', '>= 0.16', '>= 0.16.2'
+  s.add_runtime_dependency 'celluloid', '~> 0.16', '>= 0.16.0'
+  s.add_runtime_dependency 'celluloid-io', '~> 0.16', '>= 0.16.2'
   s.add_runtime_dependency 'reel', '~> 0.6', '>= 0.6.0'
   s.add_runtime_dependency 'celluloid-websocket-client', '~> 0.0', '>= 0.0.1'
   s.add_runtime_dependency 'celluloid-pmap', '~> 0.2', '>= 0.2.2'
   s.add_runtime_dependency 'activesupport', '>= 4.0', '>= 4.0'
+  s.add_runtime_dependency "rack", ">= 1.4.0"
 
   s.add_development_dependency 'appraisal', '~> 2.1', '>= 2.1'
   s.add_development_dependency 'rspec', '~> 3.5', '>= 3.5'

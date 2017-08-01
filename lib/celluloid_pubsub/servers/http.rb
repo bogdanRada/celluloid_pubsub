@@ -33,11 +33,12 @@ module CelluloidPubsub
       # @api public
       #
       # :nocov:
-      def initialize(options = {})
+      def initialize(app, options = {})
         CelluloidPubsub.config.secure = false
-        initialize_server(options)
-        options[:verify_mode] = OpenSSL::SSL::VERIFY_NONE
-        super(hostname, port, { spy: spy, backlog: backlog }.merge(options), &method(:on_connection))
+        initialize_server(app, options) do
+          options[:verify_mode] = OpenSSL::SSL::VERIFY_NONE
+          super(hostname, port, { spy: spy, backlog: backlog }.merge(options), &method(:on_connection))
+        end
       end
 
     end

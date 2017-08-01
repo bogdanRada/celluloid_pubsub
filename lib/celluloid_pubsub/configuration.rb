@@ -10,7 +10,9 @@ module CelluloidPubsub
       :adapter,
       :debug_enabled,
       :log_file_path,
-      :backlog
+      :backlog,
+      :quiet,
+      :rackup
     ]
 
     SETTINGS.each do |setting|
@@ -19,18 +21,29 @@ module CelluloidPubsub
     end
 
     def initialize
-      @secure         = true
+      @secure         = false
       @host           = '0.0.0.0'
       # by default the port is  nil so that it will find itself
       # an unused port automatically
       @port           = nil
       @path           = '/ws'
-      @spy            = false
+      @spy            = true
       @adapter        = 'classic'
       @debug_enabled  = false
       @log_file_path  = nil
       @backlog        = 1024
+      @quiet          = false
+      @rackup         = "config.ru"
     end
 
+    def attributes
+      hash = {}
+      instance_variables.select do |ivar|
+        attr_value = instance_variable_get(ivar)
+        hash[ivar.to_s] = attr_value if attr_value.present?
+      end
+      hash
+    end
+    
   end
 end

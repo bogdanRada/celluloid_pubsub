@@ -2,6 +2,10 @@ require 'bundler/setup'
 require 'celluloid_pubsub'
 require 'logger'
 
+$stdout.sync = true
+$stderr.sync = true
+$stdin.sync = true
+
 debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
 log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
 
@@ -61,9 +65,9 @@ options = {
 
 # please don't use the BaseActor class to supervise actors. This is subject to change . This class is used only to test backward compatibility.
 # For more information on how to supervise actors please see Celluloid wiki.
-CelluloidPubsub::BaseActor.setup_actor_supervision(CelluloidPubsub::Server::HTTPS, actor_name: :web_server, args: {enable_debug: debug_enabled, adapter: nil,log_file_path: log_file_path }.merge(options))
+CelluloidPubsub::BaseActor.setup_actor_supervision(CelluloidPubsub::Server::HTTPS, actor_name: :web_server, args: options)
 CelluloidPubsub::BaseActor.setup_actor_supervision(FirstActor, actor_name: :first_actor, args: {enable_debug: debug_enabled })
-CelluloidPubsub::BaseActor.setup_actor_supervision(SecondActor, actor_name: :second_actor, args: {enable_debug: debug_enabled })
+#CelluloidPubsub::BaseActor.setup_actor_supervision(SecondActor, actor_name: :second_actor, args: {enable_debug: debug_enabled })
 
 signal_received = false
 

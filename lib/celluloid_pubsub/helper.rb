@@ -14,8 +14,17 @@ module CelluloidPubsub
     def succesfull_subscription?(message)
       message.is_a?(Hash) && message['client_action'] == 'successful_subscription'
     end
+    
+    module_function
 
-  module_function
+    def parse_cert(cert)
+      return cert if cert.blank?
+      cert = cert.gsub("\\n", "\n")
+      cert = cert.gsub("\\u003d", '=')
+      cert = cert.gsub("\r\n", '')
+      cert = cert.gsub("\t", "")
+      cert
+    end
 
     # returns the gem's property from its speification or nil
     # @param [String] name the name of the gem
@@ -144,7 +153,7 @@ module CelluloidPubsub
     # @api private
     def parse_options(options)
       options = options.is_a?(Array) ? options.first : options
-      options = options.is_a?(Hash) ? options.stringify_keys : {}
+      options = options.is_a?(Hash) ? options.symbolize_keys : {}
       options
     end
 

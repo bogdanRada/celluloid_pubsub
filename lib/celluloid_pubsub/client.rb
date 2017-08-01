@@ -82,7 +82,7 @@ module CelluloidPubsub
     def connection_protocol
       @connection_protocol = CelluloidPubsub.config.secure.to_s.downcase == 'true' ? "wss" : "ws"
     end
-    
+
     # the method will return the client that is used to
     #
     #
@@ -100,7 +100,7 @@ module CelluloidPubsub
     #
     # @api public
     def hostname
-      @hostname ||= @options.fetch('hostname', CelluloidPubsub.config.host)
+      @hostname ||= @options.fetch('hostname', CelluloidPubsub.config.host) || CelluloidPubsub.config.host
     end
 
     # the method will return the port on which the server accepts connections
@@ -120,7 +120,7 @@ module CelluloidPubsub
     #
     # @api public
     def path
-      @path ||= @options.fetch('path', CelluloidPubsub.config.path)
+      @path ||= @options.fetch('path', CelluloidPubsub.config.path) || CelluloidPubsub.config.path
     end
 
     # the method will terminate the current actor
