@@ -35,12 +35,12 @@ module CelluloidPubsub
     def run
       @parser.parse! @argv
       @options[:rackup] = @argv.shift if @argv.last
-
+      
       app, options = ::Rack::Builder.parse_file(@options[:rackup])
       options.merge!(@options)
-      ::Rack::Handler::Reel.run(app, options)
+      ::Rack::Handler::CelluloidPubsub.run(app, options)
 
-      Celluloid.logger.info "That's all, folks!"
+      Celluloid.logger.info "It works!"
     end
   end
 end

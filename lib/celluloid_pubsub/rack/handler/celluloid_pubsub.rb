@@ -10,7 +10,7 @@ module Rack
 
         server_class = CelluloidPubsub.config.secure.to_s.downcase == 'true' ? CelluloidPubsub::Server::HTTP : CelluloidPubsub::Server::HTTPS
 
-        supervisor = server_class.supervise(as: :reel_rack_server, args: [app, options])
+        CelluloidPubsub::BaseActor.setup_actor_supervision(server_class, actor_name: :celluloid_pubsub_rack_server, args: [app, options] )
 
         begin
           sleep

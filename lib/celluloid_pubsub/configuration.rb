@@ -27,7 +27,7 @@ module CelluloidPubsub
       # an unused port automatically
       @port           = nil
       @path           = '/ws'
-      @spy            = true
+      @spy            = false
       @adapter        = 'classic'
       @debug_enabled  = false
       @log_file_path  = nil
@@ -44,6 +44,6 @@ module CelluloidPubsub
       end
       hash
     end
-    
+
   end
 end
