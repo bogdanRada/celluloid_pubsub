@@ -14,9 +14,10 @@ Gem::Specification.new do |s|
 
   s.licenses = ['MIT']
   s.files = `git ls-files`.split("\n")
-  s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
-  s.executables   = `git ls-files -- bin/*`.split('\n').map{ |f| File.basename(f) }
+  s.test_files = s.files.grep(/^(spec)/)
+  s.executables = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.require_paths = ['lib']
+  s.required_ruby_version = '>= 2.2.2'
 
   s.add_runtime_dependency 'celluloid', '~> 0.16', '>= 0.16.0'
   s.add_runtime_dependency 'celluloid-io', '~> 0.16', '>= 0.16.2'

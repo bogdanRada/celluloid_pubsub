@@ -15,11 +15,11 @@ module CelluloidPubsub
   # provides a easy way of getting the major, minor and tiny
   module VERSION
     # major release version
-    MAJOR = 1
+    MAJOR = 2
     # minor release version
-    MINOR = 1
+    MINOR = 0
     # tiny release version
-    TINY = 2
+    TINY = 0
     # prelease version ( set this only if it is a prelease)
     PRE = nil
 

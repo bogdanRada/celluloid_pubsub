@@ -11,7 +11,7 @@ module CelluloidPubsub
 
     def parser
       @parser ||= OptionParser.new do |o|
-        o.banner = "reel-rack <options> <rackup file>"
+        o.banner = "celluloid_pubsub <options> <rackup file>"
 
         o.on "-a", "--addr ADDR", "Address to listen on (default #{@options[:addr]})" do |addr|
           @options[:addr] = addr
@@ -35,8 +35,8 @@ module CelluloidPubsub
     def run
       @parser.parse! @argv
       @options[:rackup] = @argv.shift if @argv.last
-      if @options[:rackup].present?  && File.exists?(@options[:rackup])
-        app, options = ::Rack::Builder.parse_file(@options[:rackup])
+      if @options[:rackup].present?  && File.exists?(File.expand_path(@options[:rackup]))
+        app, options = ::Rack::Builder.parse_file(File.expand_path(@options[:rackup]))
         options.merge!(@options)
         ::Rack::Handler::CelluloidPubsub.run(app, options)
 
