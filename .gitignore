@@ -17,7 +17,7 @@ tags
 doc/
 bin/
 gemfiles/*.lock
-examples/tmp/**
+examples/tmp
 examples/log
 *.log
 
