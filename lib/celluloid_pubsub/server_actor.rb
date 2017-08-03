@@ -47,8 +47,8 @@ module CelluloidPubsub
       @mutex = Mutex.new
       setup_celluloid_logger
       debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
-      yield if block_given?
       @app = app
+      yield if block_given?
     end
 
     # the method will  return the socket conection opened on the unused port
@@ -271,7 +271,7 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def route_request(request)
+    def route_request(connection, request)
       options = {
         :method       => request.method,
         :input        => request.body.to_s,
@@ -280,7 +280,7 @@ module CelluloidPubsub
 
       normalize_env(options)
 
-      status, headers, body = app.call ::Rack::MockRequest.env_for(request.url, options)
+      status, headers, body = @app.call ::Rack::MockRequest.env_for(request.url, options)
 
       if body.respond_to? :each
         # If Content-Length was specified we can send the response all at once

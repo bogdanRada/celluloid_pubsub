@@ -10,6 +10,7 @@ module Rack
 
         server_class = ::CelluloidPubsub.config.secure.to_s.downcase == 'false' ? ::CelluloidPubsub::Server::HTTP : ::CelluloidPubsub::Server::HTTPS
 
+        options[:port] = options[:Port]
         ::CelluloidPubsub::BaseActor.setup_actor_supervision(server_class, actor_name: :celluloid_pubsub_rack_server, args: [app, options] )
 
         begin
