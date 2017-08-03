@@ -35,12 +35,15 @@ module CelluloidPubsub
     def run
       @parser.parse! @argv
       @options[:rackup] = @argv.shift if @argv.last
-      
-      app, options = ::Rack::Builder.parse_file(@options[:rackup])
-      options.merge!(@options)
-      ::Rack::Handler::CelluloidPubsub.run(app, options)
+      if @options[:rackup].present?  && File.exists?(@options[:rackup])
+        app, options = ::Rack::Builder.parse_file(@options[:rackup])
+        options.merge!(@options)
+        ::Rack::Handler::CelluloidPubsub.run(app, options)
 
-      Celluloid.logger.info "It works!"
+        Celluloid.logger.info "It works!"
+      else
+        Celluloid.logger.info "Missing file #{@options[:rackup]} !!!"
+      end
     end
   end
 end

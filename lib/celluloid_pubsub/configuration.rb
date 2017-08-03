@@ -38,9 +38,9 @@ module CelluloidPubsub
 
     def attributes
       hash = {}
-      instance_variables.select do |ivar|
-        attr_value = instance_variable_get(ivar)
-        hash[ivar.to_s] = attr_value if attr_value.present?
+      CelluloidPubsub::Configuration::SETTINGS.each do |ivar|
+        attr_value = send(ivar.to_s)
+        hash[ivar] = attr_value
       end
       hash
     end
