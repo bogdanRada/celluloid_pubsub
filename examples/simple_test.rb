@@ -54,12 +54,14 @@ class SecondActor
 
 end
 
-
+CelluloidPubsub.configure do |config|
+  config.spy = true
+end
 # please don't use the BaseActor class to supervise actors. This is subject to change . This class is used only to test backward compatibility.
 # For more information on how to supervise actors please see Celluloid wiki.
-CelluloidPubsub::BaseActor.setup_actor_supervision(CelluloidPubsub::Server::HTTP, actor_name: :web_server, args: {enable_debug: debug_enabled, adapter: nil,log_file_path: log_file_path })
-CelluloidPubsub::BaseActor.setup_actor_supervision(FirstActor, actor_name: :first_actor, args: {enable_debug: debug_enabled })
-CelluloidPubsub::BaseActor.setup_actor_supervision(SecondActor, actor_name: :second_actor, args: {enable_debug: debug_enabled })
+CelluloidPubsub::BaseActor.setup_actor_supervision(CelluloidPubsub::Server::HTTP, actor_name: :web_server, args: {quiet: debug_enabled, adapter: nil,log_file_path: log_file_path })
+CelluloidPubsub::BaseActor.setup_actor_supervision(FirstActor, actor_name: :first_actor, args: {quiet: debug_enabled })
+CelluloidPubsub::BaseActor.setup_actor_supervision(SecondActor, actor_name: :second_actor, args: {quiet: debug_enabled })
 
 signal_received = false
 

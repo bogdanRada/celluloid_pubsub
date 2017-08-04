@@ -46,8 +46,12 @@ module CelluloidPubsub
       @subscribers = {}
       @mutex = Mutex.new
       setup_celluloid_logger
-      debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
       @app = app
+      raise ArgumentError, "no host given" unless hostname
+      raise ArgumentError, "no port given" unless port
+
+      info  "A Reel good HTTP server! (Codename \"#{::Reel::CODENAME}\")"
+      info "Listening on http://#{hostname}:#{port}"
       yield if block_given?
     end
 
@@ -127,8 +131,8 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @debug_enabled = @server_options.delete(:enable_debug) || CelluloidPubsub.config.debug_enabled
-      @debug_enabled == true
+      @debug_enabled = @server_options.delete(:quiet) || CelluloidPubsub.config.quiet
+      @debug_enabled == false
     end
 
     # the method will terminate the current actor
@@ -159,7 +163,7 @@ module CelluloidPubsub
     #
     # @api public
     def hostname
-      @hostname = @server_options.delete(:hostname) || CelluloidPubsub.config.host
+      @hostname = @server_options.delete(:host) || CelluloidPubsub.config.host
     end
 
     # the method will return the port on which will accept connections

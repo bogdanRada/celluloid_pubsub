@@ -51,8 +51,8 @@ Creating a websocket server is simple as doing this. This are all the options av
 
 ```ruby
 CelluloidPubsub::WebServer.supervise_as(:web_server,
-  enable_debug: true, # if debug messages should be logged
-  adapter: nil ,  # if set to nil, will instantiate a simple Reactor to handle the connections which  has no dependencies . Otherwise will try to use that adapter.  Please see [celluloid_pubsub_redis_adapter](https://github.com/bogdanRada/celluloid_pubsub_redis_adapter) for more details on using redis adapter
+  quiet: true, # if debug messages should be logged
+  adapter: nil ,  # if set to nil, will instantiate a simple Reactor to handle the connections which  has no dependencies . Otherwise will try to use that adapter. Please see [celluloid_pubsub_redis_adapter](https://github.com/bogdanRada/celluloid_pubsub_redis_adapter) for more details on using redis adapter
   log_file_path: "path/to/log_file.log", # The log file where all debugging information will be printed
   hostname: "0.0.0.0", # the hostname of the server.
   port: 1234, # the port on which the server will listen for connections
@@ -76,10 +76,10 @@ class MyAwesomeClient
        hostname: "0.0.0.0",  # the hostname of the server.
        port: 1234,# the port on which the connection will be made to
        path: '/ws', # the relative path used in the URL where the connection will be connecting to
-       enable_debug: false # if debug messages should be logged
+       quiet: false # if debug messages should be logged
      }.merge(options))
   end
-
+  
   def on_message(message)
     if @client.succesfull_subscription?(message)
       puts "subscriber got successful subscription #{message.inspect}"

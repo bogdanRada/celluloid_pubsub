@@ -12,7 +12,7 @@ describe CelluloidPubsub::Client do
   before(:each) do
     CelluloidPubsub::Client.any_instance.stubs(:supervise_actors).returns(true)
     CelluloidPubsub::Client.any_instance.stubs(:connection).returns(connection)
-    @worker = CelluloidPubsub::Client.new(actor: actor, channel: channel, enable_debug: false)
+    @worker = CelluloidPubsub::Client.new(actor: actor, channel: channel, quiet: false)
     @worker.stubs(:debug).returns(true)
     @worker.stubs(:async).returns(@worker)
     actor.stubs(:async).returns(actor)

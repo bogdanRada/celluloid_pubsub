@@ -66,8 +66,8 @@ options = {
 # please don't use the BaseActor class to supervise actors. This is subject to change . This class is used only to test backward compatibility.
 # For more information on how to supervise actors please see Celluloid wiki.
 CelluloidPubsub::BaseActor.setup_actor_supervision(CelluloidPubsub::Server::HTTPS, actor_name: :web_server, args: options)
-CelluloidPubsub::BaseActor.setup_actor_supervision(FirstActor, actor_name: :first_actor, args: {enable_debug: debug_enabled })
-#CelluloidPubsub::BaseActor.setup_actor_supervision(SecondActor, actor_name: :second_actor, args: {enable_debug: debug_enabled })
+CelluloidPubsub::BaseActor.setup_actor_supervision(FirstActor, actor_name: :first_actor, args: {quiet: debug_enabled })
+#CelluloidPubsub::BaseActor.setup_actor_supervision(SecondActor, actor_name: :second_actor, args: {quiet: debug_enabled })
 
 signal_received = false
 

@@ -8,7 +8,6 @@ module CelluloidPubsub
       :path,
       :spy,
       :adapter,
-      :debug_enabled,
       :log_file_path,
       :backlog,
       :quiet,
@@ -29,13 +28,12 @@ module CelluloidPubsub
       @path           = '/ws'
       @spy            = false
       @adapter        = 'classic'
-      @debug_enabled  = false
       @log_file_path  = nil
       @backlog        = 1024
-      @quiet          = false
+      @quiet          = true
       @rackup         = "config.ru"
     end
-
+    
     def attributes
       hash = {}
       CelluloidPubsub::Configuration::SETTINGS.each do |ivar|

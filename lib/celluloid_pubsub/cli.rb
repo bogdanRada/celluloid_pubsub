@@ -5,7 +5,7 @@ module CelluloidPubsub
   class CLI
     def initialize(argv)
       @argv   = argv
-      @options = CelluloidPubsub.config.attributes
+      @default_options = CelluloidPubsub.config.attributes
       parser
     end
 
@@ -13,16 +13,16 @@ module CelluloidPubsub
       @parser ||= OptionParser.new do |o|
         o.banner = "celluloid_pubsub <options> <rackup file>"
 
-        o.on "-a", "--addr ADDR", "Address to listen on (default #{@options[:addr]})" do |addr|
-          @options[:addr] = addr
+        o.on "-a", "--addr ADDR", "Address to listen on (default #{@default_options[:host]})" do |addr|
+          @default_options[:host] = addr
         end
 
-        o.on "-p", "--port PORT", "Port to bind to (default #{@options[:Port]})" do |port|
-          @options[:Port] = port
+        o.on "-p", "--port PORT", "Port to bind to (default #{@default_options[:port]})" do |port|
+          @default_options[:port] = port
         end
 
         o.on "-q", "--quiet", "Suppress normal logging output" do
-          @options[:quiet] = true
+          @default_options[:quiet] = true
         end
 
         o.on_tail "-h", "--help", "Show help" do
@@ -34,15 +34,15 @@ module CelluloidPubsub
 
     def run
       @parser.parse! @argv
-      @options[:rackup] = @argv.shift if @argv.last
-      if @options[:rackup].present?  && File.exists?(File.expand_path(@options[:rackup]))
-        app, options = ::Rack::Builder.parse_file(File.expand_path(@options[:rackup]))
-        options.merge!(@options)
+      @default_options[:rackup] = @argv.shift if @argv.last
+      if @default_options[:rackup].present?  && File.exists?(File.expand_path(@default_options[:rackup]))
+        app, options = ::Rack::Builder.parse_file(File.expand_path(@default_options[:rackup]))
+        options.merge!(@default_options)
         ::Rack::Handler::CelluloidPubsub.run(app, options)
 
         Celluloid.logger.info "It works!"
       else
-        Celluloid.logger.info "Missing file #{@options[:rackup]} !!!"
+        Celluloid.logger.info "Missing file #{@default_options[:rackup]} !!!"
       end
     end
   end

@@ -141,7 +141,7 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      @options.fetch('enable_debug', false).to_s == 'true'
+      @options.fetch('quiet', true).to_s == 'false'
     end
 
     # subscribes to a channel . need to be used inside the connect block passed to the actor
