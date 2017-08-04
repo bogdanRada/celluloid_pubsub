@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'celluloid-pmap', '~> 0.2', '>= 0.2.2'
   s.add_runtime_dependency 'activesupport', '>= 4.0', '>= 4.0'
   s.add_runtime_dependency "rack", ">= 1.4.0"
-
+  
   s.add_development_dependency 'appraisal', '~> 2.1', '>= 2.1'
   s.add_development_dependency 'rspec', '~> 3.5', '>= 3.5'
   s.add_development_dependency 'simplecov', '~> 0.12', '>= 0.12'

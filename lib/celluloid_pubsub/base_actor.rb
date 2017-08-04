@@ -18,6 +18,7 @@ module CelluloidPubsub
         [
           Celluloid,
           Celluloid::IO,
+          Celluloid::Notifications,
           CelluloidPubsub::Helper,
           config['logger_class']
         ].each do |module_name|
@@ -63,18 +64,40 @@ module CelluloidPubsub
         verify_gem_version(celluloid_version, '0.17', operator: '<')
       end
 
-      # sets up the actor supervision based on celluloid version
-      # @param [Class] class_name The class that will be used to supervise the actor
-      # @param [Hash] options Additional options needed for supervision
-      # @return [void]
-      #
-      # @api public
-      def setup_actor_supervision(class_name, options)
-        actor_name, args = options.slice(:actor_name, :args).values
+      def setup_actor_supervision_details(class_name, options)
+        arguments = (options[:args].is_a?(Array) ? options[:args] : [options[:args]]).compact
         if version_less_than_seventeen?
-          class_name.supervise_as(actor_name, *args)
+          options[:type].present? ? [options[:actor_name], options[:type], *arguments] : [options[:actor_name], *arguments]
         else
-        class_name.supervise(as: actor_name, args: [args].compact)
+          #supervises_opts = options[:supervises].present? ? { supervises: options[:supervises] } : {}
+          { as: options[:actor_name], type: options[:type], args: arguments, size: options.fetch(:size, nil) }.delete_if{ |key, value| value.blank? }
+        end
+      end
+
+      def setup_actor_supervision(class_name, options)
+        if version_less_than_seventeen?
+          class_name.supervise_as(*setup_actor_supervision_details(class_name, options))
+        else
+          class_name.supervise setup_actor_supervision_details(class_name, options)
+        end
+      end
+
+      def setup_supervision_group
+        if version_less_than_seventeen?
+          Celluloid::SupervisionGroup.run!
+        else
+          Celluloid::Supervision::Container.run!
+        end
+      end
+
+      def setup_pool_of_actor(class_name, options)
+        if version_less_than_seventeen?
+          class_name.pool(options[:type], as: options[:actor_name], size:  options.fetch(:size, 10))
+        else
+          # config = Celluloid::Supervision::Configuration.new
+          # config.define setup_actor_supervision_details(class_name, options)
+          options = setup_actor_supervision_details(class_name, options)
+          class_name.pool *[options[:type], options.except(:type)]
         end
       end
     end
@@ -88,6 +111,6 @@ if CelluloidPubsub::BaseActor.version_less_than_seventeen?
 else
   require 'celluloid/current'
   celluloid_running = Celluloid.running? rescue false
-   Celluloid.boot unless celluloid_running
+  Celluloid.boot unless celluloid_running
   require 'celluloid'
 end

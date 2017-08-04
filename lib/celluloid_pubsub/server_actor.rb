@@ -21,11 +21,13 @@ module CelluloidPubsub
     include CelluloidPubsub::BaseActor
 
 
+
     def self.included(base)
       base.send(:include, CelluloidPubsub::BaseActor)
     end
 
     attr_accessor :server_options, :subscribers, :mutex, :server_options, :app
+    attr_reader :worker_supervisor, :workers
     finalizer :shutdown
     #  receives a list of options that are used to configure the webserver
     #
@@ -124,6 +126,11 @@ module CelluloidPubsub
       @adapter.present? ? @adapter : CelluloidPubsub.config.adapter
     end
 
+
+    def http_adapter
+      @http_adapter ||= @server_options.delete(:http_adapter) ||  CelluloidPubsub.config.http_adapter
+      @http_adapter.present? ? @http_adapter : CelluloidPubsub.config.http_adapter
+    end
     # the method will return true if debug is enabled otherwise false
     #
     #
@@ -220,7 +227,8 @@ module CelluloidPubsub
     #
     # @api public
     def on_connection(connection)
-      while request = connection.request
+      connection.detach
+      connection.each_request do  |request|
         if request.websocket?
           log_debug "#{self.class} Received a WebSocket connection"
 
@@ -231,13 +239,26 @@ module CelluloidPubsub
           #
           # If we want to hand this connection off to another actor, we first
           # need to detach it from the Reel::Server (in this case, Reel::Server::HTTP)
-          connection.detach
           dispatch_websocket_request(request)
           return
         else
-          route_request connection, request
+          route_request(request)
         end
       end
+    end
+
+    def route_request(request)
+      log_debug "#{self.class} Received a HTTP connection #{request.url}"
+
+      # We're going to hand off this connection to another actor (Writer/Reader)
+      # However, initially Reel::Connections are "attached" to the
+      # Reel::Server::HTTP actor, meaning that the server manages the connection
+      # lifecycle (e.g. error handling) for us.
+      #
+      # If we want to hand this connection off to another actor, we first
+      # need to detach it from the Reel::Server (in this case, Reel::Server::HTTP)
+      dispatch_http_request(request)
+      return
     end
 
     #  returns the reactor class that will handle the connection depending if redis is enabled or not
@@ -248,6 +269,16 @@ module CelluloidPubsub
     # @api public
     def reactor_class
       adapter == 'classic' ? CelluloidPubsub::Reactor : "CelluloidPubsub::#{adapter.camelize}Reactor".constantize
+    end
+
+    #  returns the reactor class that will handle the connection depending if redis is enabled or not
+    # @see #redis_enabled?
+    #
+    # @return [Class]  returns the reactor class that will handle the connection depending if redis is enabled or not
+    #
+    # @api public
+    def http_reactor_class
+      http_adapter == 'classic' ? CelluloidPubsub::HttpReactor : "CelluloidPubsub::#{http_adapter.camelize}HttpReactor".constantize
     end
 
     # method will instantiate a new reactor object, will link the reactor to the current actor and will dispatch the request to the reactor
@@ -264,93 +295,17 @@ module CelluloidPubsub
       route_websocket(reactor, request.websocket)
     end
 
-    # Compile the regex once
-    CONTENT_LENGTH_HEADER = %r{^content-length$}i
-
-    #  HTTP connections are not accepted so this method will show 404 message "Not Found"
-    #
-    # @param [Reel::WebSocket] connection The HTTP connection that was received
-    # @param [Reel::Request] request The request that was made to the webserver and contains the type , the url, and the parameters
-    #
-    # @return [void]
-    #
-    # @api public
-    def route_request(connection, request)
-      options = {
-        :method       => request.method,
-        :input        => request.body.to_s,
-        "REMOTE_ADDR" => request.remote_addr
-      }.merge(convert_headers(request.headers))
-
-      normalize_env(options)
-
-      status, headers, body = @app.call ::Rack::MockRequest.env_for(request.url, options)
-
-      if body.respond_to? :each
-        # If Content-Length was specified we can send the response all at once
-        if headers.keys.detect { |h| h =~ CONTENT_LENGTH_HEADER }
-          # Can't use collect here because Rack::BodyProxy/Rack::Lint isn't a real Enumerable
-          full_body = ''
-          body.each { |b| full_body << b }
-          request.respond status_symbol(status), headers, full_body
-        else
-          request.respond status_symbol(status), headers.merge(:transfer_encoding => :chunked)
-          body.each { |chunk| request << chunk }
-          request.finish_response
-        end
-      else
-        Logger.error("don't know how to render: #{body.inspect}")
-        request.respond :internal_server_error, "An error occurred processing your request"
+    def dispatch_http_request(request)
+      if !defined?(@http_reactor)
+        @http_reactor ||= http_reactor_class.new
+        Actor.current.link @http_reactor
       end
-
-      body.close if body.respond_to? :close
+      route_http_request(@http_reactor, request)
     end
 
-    # Those headers must not start with 'HTTP_'.
-    NO_PREFIX_HEADERS=%w[CONTENT_TYPE CONTENT_LENGTH].freeze
-
-    def convert_headers(headers)
-      Hash[
-        headers.map do |key, value|
-          header = key.upcase.gsub('-','_')
-
-          if NO_PREFIX_HEADERS.member?(header)
-            [header, value]
-          else
-            ['HTTP_' + header, value]
-          end
-        end
-      ]
+    def route_http_request(reactor, request)
+      reactor.work(request, Actor.current)
     end
-
-    # Copied from lib/puma/server.rb
-    def normalize_env(env)
-      if host = env["HTTP_HOST"]
-        if colon = host.index(":")
-          env["SERVER_NAME"] = host[0, colon]
-          env["SERVER_PORT"] = host[colon+1, host.bytesize]
-        else
-          env["SERVER_NAME"] = host
-          env["SERVER_PORT"] = default_server_port(env)
-        end
-      else
-        env["SERVER_NAME"] = "localhost"
-        env["SERVER_PORT"] = default_server_port(env)
-      end
-    end
-
-    def default_server_port(env)
-      env['HTTP_X_FORWARDED_PROTO'] == 'https' ? 443 : 80
-    end
-
-    def status_symbol(status)
-      if status.is_a?(Fixnum)
-        Reel::Response::STATUS_CODES[status].downcase.gsub(/\s|-/, '_').to_sym
-      else
-        status.to_sym
-      end
-    end
-
     #  If the socket url matches with the one accepted by the server, it will dispatch the socket connection to a new reactor {CelluloidPubsub::Reactor#work}
     # The new actor is linked to the webserver
     #

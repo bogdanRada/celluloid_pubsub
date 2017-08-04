@@ -6,7 +6,14 @@ module CelluloidPubsub
     def initialize(argv)
       @argv   = argv
       @default_options = CelluloidPubsub.config.attributes
+      initialize_std
       parser
+    end
+    
+    def initialize_std
+      $stdin.sync = true # if $stdin.isatty
+      $stdout.sync = true # if $stdout.isatty
+      $stderr.sync = true
     end
 
     def parser

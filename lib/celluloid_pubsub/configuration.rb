@@ -8,6 +8,7 @@ module CelluloidPubsub
       :path,
       :spy,
       :adapter,
+      :http_adapter,
       :log_file_path,
       :backlog,
       :quiet,
@@ -28,6 +29,7 @@ module CelluloidPubsub
       @path           = '/ws'
       @spy            = false
       @adapter        = 'classic'
+      @http_adapter   = 'classic'
       @log_file_path  = nil
       @backlog        = 1024
       @quiet          = true
