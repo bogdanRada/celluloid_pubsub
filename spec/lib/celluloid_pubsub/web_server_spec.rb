@@ -11,10 +11,10 @@ describe CelluloidPubsub::WebServer do
     expect(CelluloidPubsub::WebServer::PATH).to eq('/ws')
   end
   let(:options) { {} }
-  let(:web_server) { mock }
+  let(:web_server) { double }
 
   before(:each) do
-    CelluloidPubsub::WebServer.stubs(:new).returns(web_server)
+    allow(CelluloidPubsub::WebServer).to receive(:new).and_return(web_server)
   end
 
   #  it '#initialize with default values ' do

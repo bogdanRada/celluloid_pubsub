@@ -1,0 +1,10 @@
+rubocop:
+  config_file: .rubocop.yml
+  enabled: false
+
+flog:
+  enabled: false
+
+reek:
+  enabled: false
+

@@ -2,6 +2,6 @@
 
 source "http://rubygems.org"
 
-gem "celluloid", "0.16.0"
+gem "celluloid", "0.18.0"
 
-gemspec :path => "../"
+gemspec path: "../"

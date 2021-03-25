@@ -1,5 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
+
 require_relative './reactor'
 require_relative './helper'
 module CelluloidPubsub
@@ -17,6 +18,8 @@ module CelluloidPubsub
   #   @return [Hash] The hostname on which the webserver runs on
   # @attr  mutex
   #   @return [Mutex] The mutex that will synchronize actions on subscribers
+  # @attr  timers_mutex
+  #   @return [Mutex] The mutex that will synchronize actions on registry messages
   class WebServer < Reel::Server::HTTP
     include CelluloidPubsub::BaseActor
 
@@ -27,8 +30,10 @@ module CelluloidPubsub
     # The name of the default adapter
     CLASSIC_ADAPTER = 'classic'
 
-    attr_accessor :server_options, :subscribers, :mutex
+    attr_accessor :server_options, :subscribers, :mutex, :timers_mutex
+
     finalizer :shutdown
+    trap_exit :actor_died
     #  receives a list of options that are used to configure the webserver
     #
     # @param  [Hash]  options the options that can be used to connect to webser and send additional data
@@ -47,8 +52,10 @@ module CelluloidPubsub
       @server_options = parse_options(options)
       @subscribers = {}
       @mutex = Mutex.new
+      @timers_mutex = Mutex.new
+      @shutting_down = false
       setup_celluloid_logger
-      debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
+      log_debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
     end
 
@@ -80,7 +87,7 @@ module CelluloidPubsub
     # @return [Hash]  return the socket families available as keys in the hash
     #
     # @api public
-    # rubocop:disable ClassVars
+    # rubocop:disable Style/ClassVars
     def self.socket_families
       @@socket_families ||= Hash[*socket_infos.map { |af, *_| af }.uniq.zip([]).flatten]
     end
@@ -99,7 +106,7 @@ module CelluloidPubsub
         port
       end
     end
-    # rubocop:enable ClassVars
+    # rubocop:enable Style/ClassVars
 
     # this method is overriden from the Reel::Server::HTTP in order to set the spy to the celluloid logger
     # before the connection is accepted.
@@ -107,7 +114,22 @@ module CelluloidPubsub
     # @api public
     def run
       @spy = Celluloid.logger if spy
+      async.bind_timers
       loop { async.handle_connection @server.accept }
+    end
+
+    # the method will run indefinitely and will check if are there
+    # any unpublished messages that can be send to new subscribers
+    #
+    # @param [Boolean] run FLag to control if the server should try checking
+    #   if there are any unpublished messages that need to be sent
+    #
+    # @return [void]
+    #
+    # @api public
+    def bind_timers(run = false)
+      try_sending_unpublished if run
+      after(0.1) { bind_timers(true) }
     end
 
     # the method will  return true if redis can be used otherwise false
@@ -119,6 +141,16 @@ module CelluloidPubsub
     def adapter
       @adapter ||= @server_options.fetch('adapter', CelluloidPubsub::WebServer::CLASSIC_ADAPTER)
       @adapter.present? ? @adapter : CelluloidPubsub::WebServer::CLASSIC_ADAPTER
+    end
+
+    # the method will return true if the actor is shutting down
+    #
+    #
+    # @return [Boolean] returns true if the actor is shutting down
+    #
+    # @api public
+    def shutting_down?
+      @shutting_down == true
     end
 
     # the method will return true if debug is enabled otherwise false
@@ -139,7 +171,8 @@ module CelluloidPubsub
     #
     # @api public
     def shutdown
-      debug "#{self.class} tries to 'shudown'"
+      @shutting_down = true
+      log_debug "#{self.class} tries to 'shutdown'"
       terminate
     end
 
@@ -151,6 +184,15 @@ module CelluloidPubsub
     # @api public
     def log_file_path
       @log_file_path = @server_options.fetch('log_file_path', nil)
+    end
+
+    # the method will return the log level of the logger
+    #
+    # @return [Integer, nil] return the log level used by the logger ( default is 1 - info)
+    #
+    # @api public
+    def log_level
+      @log_level ||= @server_options['log_level'] || ::Logger::Severity::INFO
     end
 
     # the method will return the hostname on which the server is running on
@@ -219,7 +261,7 @@ module CelluloidPubsub
     def on_connection(connection)
       while request = connection.request
         if request.websocket?
-          log_debug "#{self.class} Received a WebSocket connection"
+          log_debug "#{self.class} Received a WebSocket connection #{request.websocket.url}"
 
           # We're going to hand off this connection to another actor (Writer/Reader)
           # However, initially Reel::Connections are "attached" to the
@@ -294,6 +336,23 @@ module CelluloidPubsub
       end
     end
 
+    # this method will know when a client has successfully registered
+    # and will write to the socket all messages that were published
+    # to that channel before the actor subscribed
+    #
+    # @return [void]
+    #
+    # @api publicsCelluloidPubsub::Registry.messages
+    def try_sending_unpublished
+      CelluloidPubsub::Registry.messages.each_key do |channel|
+        next if (clients = subscribers[channel]).blank?
+        clients.dup.pmap do |hash|
+          hash[:reactor].send_unpublished(channel)
+        end
+        clients.last[:reactor].clear_unpublished_messages(channel)
+      end
+    end
+
     # If the message can be parsed into a Hash it will respond to the reactor's websocket connection with the same message in JSON format
     # otherwise will try send the message how it is and escaped into JSON format
     #
@@ -308,6 +367,19 @@ module CelluloidPubsub
       message = reactor.parse_json_data(data)
       final_data = message.present? && message.is_a?(Hash) ? message.to_json : data.to_json
       reactor.websocket << final_data
+    end
+
+    # method called when the actor is exiting
+    #
+    # @param [actor] actor - the current actor
+    # @param [Hash] reason - the reason it crashed
+    #
+    # @return [void]
+    #
+    # @api public
+    def actor_died(actor, reason)
+      @shutting_down = true
+      log_debug "Oh no! #{actor.inspect} has died because of a #{reason.class}"
     end
   end
 end

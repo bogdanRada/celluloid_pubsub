@@ -1,5 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
+
 require_relative './registry'
 require_relative './helper'
 module CelluloidPubsub
@@ -18,7 +19,7 @@ module CelluloidPubsub
     include CelluloidPubsub::BaseActor
 
     # available actions that can be delegated
-    AVAILABLE_ACTIONS = %w(unsubscribe_clients unsubscribe subscribe publish unsubscribe_all).freeze
+    AVAILABLE_ACTIONS = %w[unsubscribe_clients unsubscribe subscribe publish unsubscribe_all].freeze
 
     # The websocket connection received from the server
     # @return [Reel::WebSocket] websocket connection
@@ -32,7 +33,13 @@ module CelluloidPubsub
     # @return [Array] array of channels to which the current reactor has subscribed to
     attr_accessor :channels
 
+    # The same options passed to the server are available on the reactor too
+    # @return [Hash] Hash with all the options passed to the server
+    attr_reader :options
+
     finalizer :shutdown
+    trap_exit :actor_died
+
     #  rececives a new socket connection from the server
     #  and listens for messages
     #
@@ -42,11 +49,67 @@ module CelluloidPubsub
     #
     # @api public
     def work(websocket, server)
-      @server = server
-      @channels = []
-      @websocket = websocket
-      log_debug "#{self.class} Streaming changes for #{websocket.url}"
+      initialize_data(websocket, server)
       async.run
+    end
+
+    # initializes the actor
+    #
+    # @param  [Reel::WebSocket] websocket
+    # @param  [CelluloidPubsub::WebServer] server
+    #
+    # @return [Celluloid::Actor] returns the actor
+    #
+    # @api public
+    def initialize_data(websocket, server)
+      @websocket = websocket
+      @server = server
+      @options = @server.server_options
+      @channels = []
+      @shutting_down = false
+      setup_celluloid_logger
+      log_debug "#{self.class} Streaming changes for #{websocket.url} #{websocket.class.name}"
+      yield(websocket, server) if block_given?
+      cell_actor
+    end
+
+    # the method will return the file path of the log file where debug messages will be printed
+    #
+    #
+    # @return [String] returns the file path of the log file where debug messages will be printed
+    #
+    # @api public
+    def log_file_path
+      @log_file_path ||= options.fetch('log_file_path', nil)
+    end
+
+    # the method will return the log level of the logger
+    #
+    # @return [Integer, nil] return the log level used by the logger ( default is 1 - info)
+    #
+    # @api public
+    def log_level
+      @log_level ||= options['log_level'] || ::Logger::Severity::INFO
+    end
+
+    # the method will return options needed when configuring an adapter
+    # @see celluloid_pubsub_redis_adapter for more information
+    #
+    # @return [Hash] returns options needed by the adapter
+    #
+    # @api public
+    def adapter_options
+      @adapter_options ||= options['adapter_options'] || {}
+    end
+
+    # the method will return true if the actor is shutting down
+    #
+    #
+    # @return [Boolean] returns true if the actor is shutting down
+    #
+    # @api public
+    def shutting_down?
+      @shutting_down == true
     end
 
     # the method will return true if debug is enabled
@@ -56,7 +119,8 @@ module CelluloidPubsub
     #
     # @api public
     def debug_enabled?
-      !@server.dead? && @server.debug_enabled?
+      @debug_enabled = options.fetch('enable_debug', false)
+      @debug_enabled == true
     end
 
     # reads from the socket the message
@@ -70,11 +134,12 @@ module CelluloidPubsub
     # :nocov:
     def run
       loop do
-        break if Actor.current.dead? || @websocket.closed? || @server.dead?
+        break if shutting_down? || actor_dead?(Actor.current) || @websocket.closed? || actor_dead?(@server)
         message = try_read_websocket
         handle_websocket_message(message) if message.present?
       end
     end
+    # :nocov:
 
     # will try to read the message from the websocket
     # and if it fails will log the exception if debug is enabled
@@ -83,10 +148,9 @@ module CelluloidPubsub
     #
     # @api public
     #
-    # :nocov:
     def try_read_websocket
       @websocket.closed? ? nil : @websocket.read
-    rescue
+    rescue StandardError
       nil
     end
 
@@ -108,9 +172,10 @@ module CelluloidPubsub
     #
     # @api public
     def parse_json_data(message)
+      log_debug "#{reactor_class} received #{message}"
       JSON.parse(message)
-    rescue => exception
-      log_debug "#{reactor_class} could not parse #{message} because of #{exception.inspect}"
+    rescue StandardError => e
+      log_debug "#{reactor_class} could not parse #{message} because of #{e.inspect}"
       message
     end
 
@@ -147,7 +212,7 @@ module CelluloidPubsub
     #
     # @api public
     def handle_parsed_websocket_message(json_data)
-      data =  json_data.is_a?(Hash) ? json_data.stringify_keys : {}
+      data = json_data.is_a?(Hash) ? json_data.stringify_keys : {}
       if CelluloidPubsub::Reactor::AVAILABLE_ACTIONS.include?(data['client_action'].to_s)
         log_debug "#{self.class} finds actions for  #{json_data}"
         delegate_action(data) if data['client_action'].present?
@@ -183,7 +248,7 @@ module CelluloidPubsub
     end
 
     # the method will delegate the message to the server in an asyncronous way by sending the current actor and the message
-    # @see {CelluloidPubsub::WebServer#handle_dispatched_message}
+    # @see CelluloidPubsub::WebServer#handle_dispatched_message
     #
     # @param [Hash] json_data
     #
@@ -262,7 +327,8 @@ module CelluloidPubsub
     #
     # @api public
     def shutdown
-      debug "#{self.class} tries to 'shudown'"
+      @shutting_down = true
+      log_debug "#{self.class} tries to 'shutdown'"
       @websocket.close if @websocket.present? && !@websocket.closed?
       terminate
     end
@@ -283,6 +349,42 @@ module CelluloidPubsub
       add_subscriber_to_channel(channel, message)
       log_debug "#{self.class} subscribed to #{channel} with #{message}"
       @websocket << message.merge('client_action' => 'successful_subscription', 'channel' => channel).to_json if @server.adapter == CelluloidPubsub::WebServer::CLASSIC_ADAPTER
+    end
+
+    # this method will write to the socket all messages that were published
+    # to that channel before the actor subscribed
+    #
+    # @param [String] channel
+    # @return [void]
+    #
+    # @api public
+    def send_unpublished(channel)
+      return if (messages = unpublished_messages(channel)).blank?
+      messages.each do |msg|
+        @websocket << msg.to_json
+      end
+    end
+
+    # the method clears all the messages left unpublished in a channel
+    #
+    # @param [String] channel
+    #
+    # @return [void]
+    #
+    # @api public
+    def clear_unpublished_messages(channel)
+      CelluloidPubsub::Registry.messages[channel] = []
+    end
+
+    # the method will return a list of all unpublished messages in a channel
+    #
+    # @param [String] channel
+    #
+    # @return [Array] the list of messages that were not published
+    #
+    # @api public
+    def unpublished_messages(channel)
+      (messages = CelluloidPubsub::Registry.messages[channel]).present? ? messages : []
     end
 
     # this method will return a list of all subscribers to a particular channel or a empty array
@@ -326,9 +428,9 @@ module CelluloidPubsub
     def publish(current_topic, json_data)
       message = json_data['data'].to_json
       return if current_topic.blank? || message.blank?
-      server_pusblish_event(current_topic, message)
-    rescue => exception
-      log_debug("could not publish message #{message} into topic #{current_topic} because of #{exception.inspect}")
+      server_publish_event(current_topic, message)
+    rescue StandardError => e
+      log_debug("could not publish message #{message} into topic #{current_topic} because of #{e.inspect}")
     end
 
     # the method will publish to all subsribers of a channel a message
@@ -339,18 +441,34 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api public
-    def server_pusblish_event(current_topic, message)
-      @server.mutex.synchronize do
-        (@server.subscribers[current_topic].dup || []).pmap do |hash|
+    def server_publish_event(current_topic, message)
+      if (subscribers = @server.subscribers[current_topic]).present?
+        subscribers.dup.pmap do |hash|
           hash[:reactor].websocket << message
         end
+      else
+        save_unpublished_message(current_topic, message)
       end
     end
 
-    # unsubscribes all actors from all channels and terminates the curent actor
+    # the method save the message for a specific channel if there are no subscribers
+    #
+    # @param [String] current_topic
+    # @param [#to_s] message
+    #
+    # @return [void]
+    #
+    # @api public
+    def save_unpublished_message(current_topic, message)
+      @server.timers_mutex.synchronize do
+        (CelluloidPubsub::Registry.messages[current_topic] ||= []) << message
+      end
+    end
+
+    # unsubscribes all actors from all channels and terminates the current actor
     #
     # @param [String] _channel NOT USED - needed to maintain compatibility with the other methods
-    # @param [Object] _json_data NOT USED - needed to maintain compatibility with the other methods
+    # @param [Object] json_data NOT USED - needed to maintain compatibility with the other methods
     #
     # @return [void]
     #
@@ -383,12 +501,25 @@ module CelluloidPubsub
     # @api public
     def server_kill_reactors(channel)
       @server.mutex.synchronize do
-        (@server.subscribers[channel].dup || []).pmap do |hash|
+        (@server.subscribers[channel] || []).dup.pmap do |hash|
           reactor = hash[:reactor]
           reactor.websocket.close
           Celluloid::Actor.kill(reactor)
         end
       end
+    end
+
+    # method called when the actor is exiting
+    #
+    # @param [actor] actor - the current actor
+    # @param [Hash] reason - the reason it crashed
+    #
+    # @return [void]
+    #
+    # @api public
+    def actor_died(actor, reason)
+      @shutting_down = true
+      log_debug "Oh no! #{actor.inspect} has died because of a #{reason.class}"
     end
   end
 end
