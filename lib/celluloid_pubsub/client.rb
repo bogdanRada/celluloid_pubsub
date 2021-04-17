@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require_relative './helper'
+require_relative './client_connection'
 module CelluloidPubsub
   # worker that subscribes to a channel or publishes to a channel
   # if it used to subscribe to a channel the worker will dispatch the messages to the actor that made the
@@ -103,7 +104,7 @@ module CelluloidPubsub
     #
     # @api public
     def connection
-      @connection ||= Celluloid::WebSocket::Client.new("ws://#{hostname}:#{port}#{path}", Actor.current)
+      @connection ||= CelluloidPubsub::ClientConnection.new("ws://#{hostname}:#{port}#{path}", Actor.current)
     end
 
     # the method will return the hostname of the server
@@ -259,6 +260,7 @@ module CelluloidPubsub
         @actor.on_close(code, reason)
       end
     ensure
+      log_debug("#{self.class} closing the connection on close and terminating")
       connection.terminate unless actor_dead?(connection)
       terminate
     end

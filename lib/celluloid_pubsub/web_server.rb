@@ -32,6 +32,8 @@ module CelluloidPubsub
 
     attr_accessor :server_options, :subscribers, :mutex, :timers_mutex
 
+    attr_reader :reactors
+
     finalizer :shutdown
     trap_exit :actor_died
     #  receives a list of options that are used to configure the webserver
@@ -54,6 +56,7 @@ module CelluloidPubsub
       @mutex = Mutex.new
       @timers_mutex = Mutex.new
       @shutting_down = false
+      @reactors = []
       setup_celluloid_logger
       log_debug "CelluloidPubsub::WebServer example starting on #{hostname}:#{port}"
       super(hostname, port, { spy: spy, backlog: backlog }, &method(:on_connection))
@@ -173,6 +176,9 @@ module CelluloidPubsub
     def shutdown
       @shutting_down = true
       log_debug "#{self.class} tries to 'shutdown'"
+      reactors.each do |reactor|
+        reactor.terminate unless actor_dead?(reactor)
+      end
       terminate
     end
 

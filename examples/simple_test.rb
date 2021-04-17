@@ -29,10 +29,9 @@ class FirstActor
   end
 
   def on_close(code, reason)
-    puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
+    puts "subscriber: websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
   end
-
 
 end
 
@@ -54,7 +53,7 @@ class SecondActor
   end
 
   def on_close(code, reason)
-    puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
+    puts "publisher: websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
   end
 
@@ -85,4 +84,11 @@ end
 
 Kernel.sleep 0.1 until signal_received
 puts 'Exited succesfully! =)'
+
+# use this if you want to see the `on_close` callbacks being fired
+#Celluloid::Actor[:web_server].shutdown
+
+# if you are using this, the `on_close` on the websocket connection won't get triggered
+#  in this case you will need a finalizer on the subscriber and publisher
+#  for when the actors are shutting down
 Celluloid.shutdown

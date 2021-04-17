@@ -50,6 +50,7 @@ module CelluloidPubsub
     # @api public
     def work(websocket, server)
       initialize_data(websocket, server)
+      server.reactors << Actor.current
       async.run
     end
 
