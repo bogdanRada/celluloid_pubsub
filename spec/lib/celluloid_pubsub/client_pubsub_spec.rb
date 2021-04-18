@@ -276,7 +276,7 @@ describe CelluloidPubsub::Client do
   describe 'connection' do
     it 'returns the path of the server' do
       allow_any_instance_of(CelluloidPubsub::Client).to receive(:connection).and_call_original
-      expect(Celluloid::WebSocket::Client).to receive(:new).with("ws://#{@worker.hostname}:#{@worker.port}#{@worker.path}", @worker).and_return(connection)
+      expect(CelluloidPubsub::ClientConnection).to receive(:new).with("ws://#{@worker.hostname}:#{@worker.port}#{@worker.path}", @worker).and_return(connection)
       result = @worker.connection
       expect(result).to eq(connection)
     end

@@ -24,7 +24,8 @@ describe CelluloidPubsub::Reactor do
       subscribers: {},
       handle_dispatched_message: nil,
       mutex: mutex,
-      timers_mutex: timers_mutex
+      timers_mutex: timers_mutex, 
+      reactors: []
     )
   end
   let(:mutex) { double('mutex') }
