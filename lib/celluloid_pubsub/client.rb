@@ -1,6 +1,8 @@
 # encoding: utf-8
 # frozen_string_literal: true
+
 require_relative './helper'
+require_relative './client_connection'
 module CelluloidPubsub
   # worker that subscribes to a channel or publishes to a channel
   # if it used to subscribe to a channel the worker will dispatch the messages to the actor that made the
@@ -30,6 +32,7 @@ module CelluloidPubsub
     attr_accessor :channel
 
     finalizer :shutdown
+    trap_exit :actor_died
     #  receives a list of options that are used to connect to the webserver and an actor to which the callbacks are delegated to
     #  when receiving messages from a channel
     #
@@ -48,9 +51,21 @@ module CelluloidPubsub
       @options = options.stringify_keys!
       @actor ||= @options.fetch('actor', nil)
       @channel ||= @options.fetch('channel', nil)
+      @shutting_down = false
       raise "#{self}: Please provide an actor in the options list!!!" if @actor.blank?
-      supervise_actors
       setup_celluloid_logger
+      log_debug "#{@actor.class} starting on #{hostname}:#{port}"
+      supervise_actors
+    end
+
+    # the method will return true if the actor is shutting down
+    #
+    #
+    # @return [Boolean] returns true if the actor is shutting down
+    #
+    # @api public
+    def shutting_down?
+      @shutting_down == true
     end
 
     # the method will return the path to the log file where debug messages will be printed
@@ -60,6 +75,15 @@ module CelluloidPubsub
     # @api public
     def log_file_path
       @log_file_path ||= @options.fetch('log_file_path', nil)
+    end
+
+    # the method will return the log level of the logger
+    #
+    # @return [Integer, nil] return the log level used by the logger ( default is 1 - info)
+    #
+    # @api public
+    def log_level
+      @log_level ||= @options['log_level'] || ::Logger::Severity::INFO
     end
 
     # the method will link the current actor to the actor that is attached to, and the connection to the current actor
@@ -80,7 +104,7 @@ module CelluloidPubsub
     #
     # @api public
     def connection
-      @connection ||= Celluloid::WebSocket::Client.new("ws://#{hostname}:#{port}#{path}", Actor.current)
+      @connection ||= CelluloidPubsub::ClientConnection.new("ws://#{hostname}:#{port}#{path}", Actor.current)
     end
 
     # the method will return the hostname of the server
@@ -120,7 +144,8 @@ module CelluloidPubsub
     #
     # @api public
     def shutdown
-      log_debug "#{self.class} tries to 'shudown'"
+      @shutting_down = true
+      log_debug "#{self.class} tries to 'shutdown'"
       terminate
     end
 
@@ -228,17 +253,19 @@ module CelluloidPubsub
     #
     # @api public
     def on_close(code, reason)
-      connection.terminate
-      terminate
-      log_debug("#{@actor.class} dispatching on close  #{code} #{reason}")
+      log_debug("#{self.class} dispatching on close  #{code} #{reason}")
       if @actor.respond_to?(:async)
         @actor.async.on_close(code, reason)
       else
         @actor.on_close(code, reason)
       end
+    ensure
+      log_debug("#{self.class} closing the connection on close and terminating")
+      connection.terminate unless actor_dead?(connection)
+      terminate
     end
 
-  private
+    private
 
     # method used to send an action to the webserver reactor , to a chanel and with data
     #
@@ -268,6 +295,19 @@ module CelluloidPubsub
       final_message = message.is_a?(Hash) ? message.to_json : JSON.dump(action: 'message', message: message)
       log_debug("#{@actor.class} sends JSON #{final_message}")
       connection.text final_message
+    end
+
+    # method called when the actor is exiting
+    #
+    # @param [actor] actor - the current actor
+    # @param [Hash] reason - the reason it crashed
+    #
+    # @return [void]
+    #
+    # @api public
+    def actor_died(actor, reason)
+      @shutting_down = true
+      log_debug "Oh no! #{actor.inspect} has died because of a #{reason.class}"
     end
   end
 end

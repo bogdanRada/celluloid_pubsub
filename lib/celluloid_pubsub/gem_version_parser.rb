@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module CelluloidPubsub
   # class used for parsing gem versions
   # @!attribute [r] version
@@ -7,8 +8,7 @@ module CelluloidPubsub
   # @!attribute [r] options
   #   @return [Hash] The additional options for parsing the version
   class GemVersionParser
-    attr_reader :version
-    attr_reader :options
+    attr_reader :version, :options
 
     #  receives the version and the additional options
     #

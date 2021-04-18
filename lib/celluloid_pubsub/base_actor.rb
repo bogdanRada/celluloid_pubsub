@@ -1,5 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
+
 require_relative './helper'
 module CelluloidPubsub
   # base actor used for compatibility between celluloid versions
@@ -39,6 +40,7 @@ module CelluloidPubsub
       # @return [Class] returns the logger class from celluloid depending on version
       #
       # @api public
+      # :nocov:
       def celluloid_logger_class
         if version_less_than_seventeen?
           Celluloid::Logger
@@ -46,6 +48,7 @@ module CelluloidPubsub
           Celluloid::Internals::Logger
         end
       end
+      # :nocov:
 
       # returns the celluloid version loaded
       # @return [String] returns the celluloid version loaded
@@ -63,12 +66,34 @@ module CelluloidPubsub
         verify_gem_version(celluloid_version, '0.17', operator: '<')
       end
 
+      # returns true if celluloid version less than 0.18, otherwise false
+      # @return [Boolean] returns true if celluloid version less than 0.17, otherwise false
+      #
+      # @api public
+      def version_less_than_eigthteen?
+        verify_gem_version(celluloid_version, '0.18', operator: '<')
+      end
+
+      # tries to boot up Celluloid if it is not running
+      # @return [Boolean] returns true if Celluloid started false otherwise
+      #
+      # @api public
+      def boot_up
+        celluloid_running = begin
+          Celluloid.running?
+        rescue StandardError
+          false
+        end
+        Celluloid.boot unless celluloid_running
+      end
+
       # sets up the actor supervision based on celluloid version
       # @param [Class] class_name The class that will be used to supervise the actor
       # @param [Hash] options Additional options needed for supervision
       # @return [void]
       #
       # @api public
+      # :nocov:
       def setup_actor_supervision(class_name, options)
         actor_name, args = options.slice(:actor_name, :args).values
         if version_less_than_seventeen?
@@ -77,17 +102,24 @@ module CelluloidPubsub
           class_name.supervise(as: actor_name, args: [args].compact)
         end
       end
+      # :nocov:
     end
   end
 end
 
-
+# :nocov:
 if CelluloidPubsub::BaseActor.version_less_than_seventeen?
   require 'celluloid'
   require 'celluloid/autostart'
-else
+elsif CelluloidPubsub::BaseActor.version_less_than_eigthteen?
   require 'celluloid/current'
-  celluloid_running = Celluloid.running? rescue false
-   Celluloid.boot unless celluloid_running
+  CelluloidPubsub::BaseActor.boot_up
   require 'celluloid'
+else
+  require 'celluloid'
+  require 'celluloid/pool'
+  require 'celluloid/fsm'
+  require 'celluloid/supervision'
+  CelluloidPubsub::BaseActor.boot_up
 end
+# :nocov:

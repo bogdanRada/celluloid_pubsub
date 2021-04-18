@@ -1,5 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
+
 require_relative './gem_version_parser'
 module CelluloidPubsub
   # class that holds the options that are configurable for this gem
@@ -15,7 +16,39 @@ module CelluloidPubsub
       message.is_a?(Hash) && message['client_action'] == 'successful_subscription'
     end
 
-  module_function
+    # the method try to decide if an actor is dead
+    # In Celluloid 0.18 there is no `dead?` method anymore
+    #  So we are trying to be backward-compatible with older versions
+    #
+    # @param [Celluloid::Actor] actor
+    # @return [Boolean] returns true if the actor is dead, otherwise false
+    #
+    # @api public
+    def actor_dead?(actor)
+      raise actor.class.inspect if !actor.respond_to?(:dead?) && !actor.respond_to?(:alive?)
+      (actor.respond_to?(:dead?) && actor.dead?) ||
+        (actor.respond_to?(:alive?) && !actor.alive?)
+    end
+
+    # returns the instance of the class that includes the actor, this is useful in tests
+    #
+    # @return [Object] returns the object
+    #
+    # @api public
+    def own_self
+      self
+    end
+
+    # returns the current actor
+    #
+    # @return [::Celluloid::Actor] returns the current actor
+    #
+    # @api public
+    def cell_actor
+      ::Celluloid::Actor.current
+    end
+
+    module_function
 
     # returns the gem's property from its speification or nil
     # @param [String] name the name of the gem
@@ -91,36 +124,48 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api private
+    # :nocov:
     def setup_celluloid_logger
       return if !debug_enabled? || (respond_to?(:log_file_path) && log_file_path.blank?)
       setup_log_file
-      Celluloid.logger = ::Logger.new(log_file_path.present? ? log_file_path : STDOUT)
+      Celluloid.logger = ::Logger.new(log_file_path).tap do |logger|
+        logger.level = respond_to?(:log_level) ? log_level : ::Logger::Severity::INFO
+      end
       setup_celluloid_exception_handler
     end
+    # :nocov:
 
     # sets the celluloid exception handler
     #
     # @return [void]
     #
     # @api private
+    # :nocov:
     def setup_celluloid_exception_handler
       Celluloid.task_class = defined?(Celluloid::TaskThread) ? Celluloid::TaskThread : Celluloid::Task::Threaded
       Celluloid.exception_handler do |ex|
-        puts ex unless filtered_error?(ex)
+        unless filtered_error?(ex)
+          puts ex
+          puts ex.backtrace
+          puts ex.cause
+        end
       end
     end
+    # :nocov:
 
     # creates the log file where the debug messages will be printed
     #
     # @return [void]
     #
     # @api private
+    # :nocov:
     def setup_log_file
       return if !debug_enabled? || (respond_to?(:log_file_path) && log_file_path.blank?)
       FileUtils.mkdir_p(File.dirname(log_file_path)) unless File.directory?(log_file_path)
-      log_file = File.open(log_file_path, 'w')
+      log_file = File.open(log_file_path, 'wb')
       log_file.sync = true
     end
+    # :nocov:
 
     # checks if a given error needs to be filtered
     #
@@ -143,9 +188,8 @@ module CelluloidPubsub
     #
     # @api private
     def parse_options(options)
-      options = options.is_a?(Array) ? options.first : options
-      options = options.is_a?(Hash) ? options.stringify_keys : {}
-      options
+      options = options.is_a?(Array) ? options.last : options
+      options.is_a?(Hash) ? options.deep_stringify_keys : {}
     end
 
     #  receives a message, and logs it to the log file if debug is enabled
@@ -155,8 +199,12 @@ module CelluloidPubsub
     # @return [void]
     #
     # @api private
+    # :nocov:
     def log_debug(message)
-      debug message if respond_to?(:debug_enabled?) && debug_enabled?
+      return unless respond_to?(:debug_enabled?)
+      return if Celluloid.logger.blank? || !debug_enabled?
+      Celluloid.logger.debug(message)
     end
+    # :nocov:
   end
 end

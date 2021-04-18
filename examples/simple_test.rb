@@ -2,9 +2,15 @@ require 'bundler/setup'
 require 'celluloid_pubsub'
 require 'logger'
 
-debug_enabled = ENV['DEBUG'].present? && ENV['DEBUG'].to_s == 'true'
+debug_enabled = (ENV['DEBUG'].present? && ENV['DEBUG'].to_s != 'false') || ENV['DEBUG'].blank?
 log_file_path = File.join(File.expand_path(File.dirname(__FILE__)), 'log', 'celluloid_pubsub.log')
+log_level = debug_enabled ?  ::Logger::Severity::DEBUG : ::Logger::Severity::INFO
 
+Celluloid.task_class = if defined?(Celluloid::TaskThread)
+                         Celluloid::TaskThread
+                       else
+                         Celluloid::Task::Threaded
+                       end
 # actor that subscribes to a channel
 class FirstActor
   include Celluloid
@@ -23,10 +29,9 @@ class FirstActor
   end
 
   def on_close(code, reason)
-    puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
+    puts "subscriber: websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
   end
-
 
 end
 
@@ -48,7 +53,7 @@ class SecondActor
   end
 
   def on_close(code, reason)
-    puts "websocket connection closed: #{code.inspect}, #{reason.inspect}"
+    puts "publisher: websocket connection closed: #{code.inspect}, #{reason.inspect}"
     terminate
   end
 
@@ -57,9 +62,18 @@ end
 
 # please don't use the BaseActor class to supervise actors. This is subject to change . This class is used only to test backward compatibility.
 # For more information on how to supervise actors please see Celluloid wiki.
-CelluloidPubsub::BaseActor.setup_actor_supervision(CelluloidPubsub::WebServer, actor_name: :web_server, args: {enable_debug: debug_enabled, adapter: nil,log_file_path: log_file_path })
-CelluloidPubsub::BaseActor.setup_actor_supervision(FirstActor, actor_name: :first_actor, args: {enable_debug: debug_enabled })
-CelluloidPubsub::BaseActor.setup_actor_supervision(SecondActor, actor_name: :second_actor, args: {enable_debug: debug_enabled })
+CelluloidPubsub::BaseActor.setup_actor_supervision(CelluloidPubsub::WebServer, actor_name: :web_server, args: {enable_debug: debug_enabled, spy: debug_enabled, adapter: nil,log_file_path: log_file_path, log_level: log_level })
+if ENV['RUN_IN_PARALLEL'].nil? || ENV['RUN_IN_PARALLEL'].to_s.downcase == 'true'
+  [
+    { class: FirstActor, name: :first_actor },
+    { class: SecondActor, name: :second_actor }
+  ].pmap do |hash|
+    CelluloidPubsub::BaseActor.setup_actor_supervision(hash[:class], actor_name: hash[:name], args: { enable_debug: debug_enabled, log_level: log_level })
+  end
+else
+  CelluloidPubsub::BaseActor.setup_actor_supervision(FirstActor, actor_name: :first_actor, args: { enable_debug: debug_enabled, log_level: log_level })
+  CelluloidPubsub::BaseActor.setup_actor_supervision(SecondActor, actor_name: :second_actor, args: { enable_debug: debug_enabled, log_level: log_level})
+end
 
 signal_received = false
 
@@ -68,5 +82,13 @@ Signal.trap('INT') do
   signal_received = true
 end
 
-sleep 0.1 until signal_received
+Kernel.sleep 0.1 until signal_received
 puts 'Exited succesfully! =)'
+
+# use this if you want to see the `on_close` callbacks being fired
+#Celluloid::Actor[:web_server].shutdown
+
+# if you are using this, the `on_close` on the websocket connection won't get triggered
+#  in this case you will need a finalizer on the subscriber and publisher
+#  for when the actors are shutting down
+Celluloid.shutdown
